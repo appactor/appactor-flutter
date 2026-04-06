@@ -1,0 +1,39 @@
+PODS:
+  - AppActor (2.0.0)
+  - appactor_flutter (2.0.0):
+    - AppActorPlugin (~> 2.0)
+    - Flutter
+  - AppActorPlugin (2.0.0):
+    - AppActor (~> 2.0)
+  - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - appactor_flutter (from `.symlinks/plugins/appactor_flutter/ios`)
+  - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+
+SPEC REPOS:
+  "git@github.com:i-Senku/cocoapods-specs.git":
+    - AppActor
+    - AppActorPlugin
+
+EXTERNAL SOURCES:
+  appactor_flutter:
+    :path: ".symlinks/plugins/appactor_flutter/ios"
+  Flutter:
+    :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+
+SPEC CHECKSUMS:
+  AppActor: be14f8a3eae8b1d2c94e234c6333abe5d2d06816
+  appactor_flutter: 7f076d6229c69416e864035334d421ad5d16100c
+  AppActorPlugin: c2631eaf3f9c0d5fa117f78e7dccb46e680066df
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+
+PODFILE CHECKSUM: 206bc160440d2070543922778e9b779e7f190f08
+
+COCOAPODS: 1.16.2
