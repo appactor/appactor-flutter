@@ -1,4 +1,3 @@
-source 'https://github.com/appactor/cocoapods-specs.git'
 source 'https://cdn.cocoapods.org/'
 
 platform :ios, '15.0'
@@ -32,10 +31,12 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
 
-  # Local development: point to the native iOS SDK
   if ENV['APPACTOR_LOCAL_IOS']
     pod 'AppActor', :path => '../../../appactor-ios'
     pod 'AppActorPlugin', :path => '../../../appactor-ios'
+  else
+    pod 'AppActor', :git => 'https://github.com/appactor/appactor-ios.git', :tag => '0.0.1'
+    pod 'AppActorPlugin', :git => 'https://github.com/appactor/appactor-ios.git', :tag => '0.0.1'
   end
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))

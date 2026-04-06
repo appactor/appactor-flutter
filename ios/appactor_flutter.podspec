@@ -17,10 +17,8 @@ AppActor Flutter plugin wrapping the native AppActorPlugin SDK for iOS.
   s.dependency 'Flutter'
   s.platform = :ios, '15.0'
 
-  # Native AppActor iOS SDK (local path for development)
-  s.dependency 'AppActorPlugin', '0.0.1'
+  s.dependency 'AppActorPlugin', '~> 0.0'
 
-  # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'
 end
