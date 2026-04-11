@@ -14,9 +14,10 @@ extension AppActorPurchase on AppActor {
     AppActorSubscriptionReplacementMode? replacementMode,
     int? quantity,
   }) async {
+    final effectiveOfferingId = offeringId ?? package.offeringId;
     final result = await AppActorPlatform.execute(MethodNames.purchasePackage, {
       'package_id': package.id,
-      if (offeringId != null) 'offering_id': offeringId,
+      if (effectiveOfferingId != null) 'offering_id': effectiveOfferingId,
       if (oldPurchaseToken != null) 'old_purchase_token': oldPurchaseToken,
       if (replacementMode != null) 'replacement_mode': replacementMode.wireValue,
       if (quantity != null) 'quantity': quantity,

@@ -236,10 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _purchasePackage(AppActorPackage package) async {
     setState(() => _loading = true);
     try {
-      final result = await AppActor.instance.purchasePackage(
-        package,
-        offeringId: _offerings?.current?.id,
-      );
+      final result = await AppActor.instance.purchasePackage(package);
       if (!mounted) return;
       setState(() {
         if (result.customerInfo != null) _customerInfo = result.customerInfo;

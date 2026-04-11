@@ -167,6 +167,7 @@ class AppActorPackage {
   final int? tokenAmount;
   final int? position;
   final String? serverId;
+  final String? offeringId;
 
   const AppActorPackage({
     required this.id,
@@ -187,6 +188,7 @@ class AppActorPackage {
     this.tokenAmount,
     this.position,
     this.serverId,
+    this.offeringId,
   });
 
   Map<String, dynamic> toPurchaseParams() => {
@@ -197,6 +199,7 @@ class AppActorPackage {
         'store': store.wireValue,
         if (basePlanId != null) 'base_plan_id': basePlanId,
         if (offerId != null) 'offer_id': offerId,
+        if (offeringId != null) 'offering_id': offeringId,
       };
 
   @Deprecated('Use toPurchaseParams() instead')
@@ -226,6 +229,7 @@ class AppActorPackage {
       tokenAmount: (json['token_amount'] as num?)?.toInt(),
       position: (json['position'] as num?)?.toInt(),
       serverId: json['server_id'] as String?,
+      offeringId: json['offering_id'] as String?,
     );
   }
 
@@ -256,13 +260,14 @@ class AppActorPackage {
           mapEquals(metadata, other.metadata) &&
           tokenAmount == other.tokenAmount &&
           position == other.position &&
-          serverId == other.serverId;
+          serverId == other.serverId &&
+          offeringId == other.offeringId;
 
   @override
   int get hashCode => Object.hashAll([
         id, packageType, productId, storeProductId, productType, store,
         basePlanId, offerId, localizedPriceString, price, currencyCode,
         displayName, productName, productDescription, metadata?.length,
-        tokenAmount, position, serverId,
+        tokenAmount, position, serverId, offeringId,
       ]);
 }
