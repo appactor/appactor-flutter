@@ -1,3 +1,13 @@
+## 0.0.3
+
+- Updated native SDK dependencies to 0.0.3 (Android Maven Central + iOS CocoaPods/SPM).
+- Added `AppActorVerificationResult` enum — exposes server response signature verification status (`notRequested`, `verified`, `verifiedOnDevice`, `failed`).
+- Added `verification` field to `AppActorCustomerInfo` and `AppActorOfferings`.
+- Native: CDN-cacheable response signing (salt-based verification for offerings and remote config endpoints).
+- Native: transient error cache fallback — network errors, 5xx, and rate-limit responses now return stale cache instead of failing.
+- Native: always-network with ETag/304 optimization for `getCustomerInfo()` — removes stale cache window.
+- Native: 304 cache miss recovery — retries without ETag instead of throwing.
+
 ## 0.0.2
 
 - Updated native SDK dependencies to 0.0.2 (Android Maven Central + iOS CocoaPods/SPM).

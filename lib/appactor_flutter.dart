@@ -4,6 +4,7 @@ export 'src/models/appactor_options.dart';
 export 'src/models/enums.dart';
 export 'src/models/customer_info.dart';
 export 'src/models/offerings.dart';
+export 'src/models/verification_result.dart';
 export 'src/models/purchase_result.dart';
 export 'src/models/remote_config.dart';
 export 'src/models/experiment.dart';

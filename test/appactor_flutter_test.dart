@@ -392,6 +392,107 @@ void main() {
     });
   });
 
+  group('AppActorVerificationResult', () {
+    test('fromString parses wire values', () {
+      expect(AppActorVerificationResult.fromString('notRequested'),
+          AppActorVerificationResult.notRequested);
+      expect(AppActorVerificationResult.fromString('verified'),
+          AppActorVerificationResult.verified);
+      expect(AppActorVerificationResult.fromString('verifiedOnDevice'),
+          AppActorVerificationResult.verifiedOnDevice);
+      expect(AppActorVerificationResult.fromString('failed'),
+          AppActorVerificationResult.failed);
+    });
+
+    test('fromString returns notRequested for unknown', () {
+      expect(AppActorVerificationResult.fromString('garbage'),
+          AppActorVerificationResult.notRequested);
+      expect(AppActorVerificationResult.fromString(''),
+          AppActorVerificationResult.notRequested);
+    });
+
+    test('isVerified', () {
+      expect(AppActorVerificationResult.notRequested.isVerified, false);
+      expect(AppActorVerificationResult.verified.isVerified, true);
+      expect(AppActorVerificationResult.verifiedOnDevice.isVerified, true);
+      expect(AppActorVerificationResult.failed.isVerified, false);
+    });
+
+    test('wireValue roundtrip', () {
+      for (final v in AppActorVerificationResult.values) {
+        expect(AppActorVerificationResult.fromString(v.wireValue), v);
+      }
+    });
+  });
+
+  group('CustomerInfo verification', () {
+    test('fromJson parses verification field', () {
+      final info = AppActorCustomerInfo.fromJson({
+        'app_user_id': 'user_1',
+        'verification': 'verified',
+      });
+      expect(info.verification, AppActorVerificationResult.verified);
+      expect(info.verification.isVerified, true);
+    });
+
+    test('fromJson defaults verification to notRequested', () {
+      final info = AppActorCustomerInfo.fromJson({
+        'app_user_id': 'user_1',
+      });
+      expect(info.verification, AppActorVerificationResult.notRequested);
+    });
+
+    test('verification affects equality', () {
+      final a = AppActorCustomerInfo.fromJson({
+        'app_user_id': 'user_1',
+        'verification': 'verified',
+      });
+      final b = AppActorCustomerInfo.fromJson({
+        'app_user_id': 'user_1',
+        'verification': 'failed',
+      });
+      expect(a, isNot(equals(b)));
+    });
+  });
+
+  group('Offerings verification', () {
+    test('fromJson parses verification field', () {
+      final offerings = AppActorOfferings.fromJson({
+        'all': {},
+        'verification': 'verified',
+      });
+      expect(offerings.verification, AppActorVerificationResult.verified);
+    });
+
+    test('fromJson defaults verification to notRequested', () {
+      final offerings = AppActorOfferings.fromJson({'all': {}});
+      expect(
+          offerings.verification, AppActorVerificationResult.notRequested);
+    });
+
+    test('verification affects equality', () {
+      final a = AppActorOfferings.fromJson({
+        'all': {},
+        'verification': 'verified',
+      });
+      final b = AppActorOfferings.fromJson({
+        'all': {},
+        'verification': 'failed',
+      });
+      expect(a, isNot(equals(b)));
+    });
+
+    test('verifiedOnDevice from iOS', () {
+      final offerings = AppActorOfferings.fromJson({
+        'all': {},
+        'verification': 'verifiedOnDevice',
+      });
+      expect(offerings.verification,
+          AppActorVerificationResult.verifiedOnDevice);
+      expect(offerings.verification.isVerified, true);
+    });
+  });
+
   // ─── Typed Enum Tests ───
 
   group('AppActorStore', () {

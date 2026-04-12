@@ -2,17 +2,20 @@ import 'package:flutter/foundation.dart';
 
 import '../internal/deep_equals.dart';
 import 'enums.dart';
+import 'verification_result.dart';
 
 @immutable
 class AppActorOfferings {
   final AppActorOffering? current;
   final Map<String, AppActorOffering> all;
   final Map<String, List<String>> productEntitlements;
+  final AppActorVerificationResult verification;
 
   const AppActorOfferings({
     this.current,
     this.all = const {},
     this.productEntitlements = const {},
+    this.verification = AppActorVerificationResult.notRequested,
   });
 
   AppActorOffering? offering(String id) => all[id];
@@ -47,12 +50,15 @@ class AppActorOfferings {
               ),
             )
           : const {},
+      verification: AppActorVerificationResult.fromString(
+          json['verification'] as String? ?? 'notRequested'),
     );
   }
 
   @override
   String toString() =>
-      'AppActorOfferings(current: ${current?.id}, ${all.length} offerings)';
+      'AppActorOfferings(current: ${current?.id}, ${all.length} offerings, '
+      'verification: $verification)';
 
   @override
   bool operator ==(Object other) =>
@@ -61,10 +67,12 @@ class AppActorOfferings {
           runtimeType == other.runtimeType &&
           current == other.current &&
           mapEquals(all, other.all) &&
-          mapOfListsEquals(productEntitlements, other.productEntitlements);
+          mapOfListsEquals(productEntitlements, other.productEntitlements) &&
+          verification == other.verification;
 
   @override
-  int get hashCode => Object.hash(current, all.length, productEntitlements.length);
+  int get hashCode => Object.hash(
+      current, all.length, productEntitlements.length, verification);
 }
 
 @immutable

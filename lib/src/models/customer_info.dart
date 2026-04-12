@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../internal/deep_equals.dart';
 import 'enums.dart';
+import 'verification_result.dart';
 
 @immutable
 class AppActorCustomerInfo {
@@ -20,6 +21,7 @@ class AppActorCustomerInfo {
   final bool isComputedOffline;
   final Map<String, List<String>> productEntitlements;
   final Set<String> activeEntitlementKeys;
+  final AppActorVerificationResult verification;
 
   const AppActorCustomerInfo({
     this.entitlements = const {},
@@ -37,6 +39,7 @@ class AppActorCustomerInfo {
     this.isComputedOffline = false,
     this.productEntitlements = const {},
     this.activeEntitlementKeys = const {},
+    this.verification = AppActorVerificationResult.notRequested,
   });
 
   Map<String, AppActorEntitlementInfo> get activeEntitlements =>
@@ -81,6 +84,8 @@ class AppActorCustomerInfo {
       activeEntitlementKeys: json['active_entitlement_keys'] != null
           ? Set<String>.from(json['active_entitlement_keys'] as Iterable)
           : const {},
+      verification: AppActorVerificationResult.fromString(
+          json['verification'] as String? ?? 'notRequested'),
     );
   }
 
@@ -118,7 +123,8 @@ class AppActorCustomerInfo {
       'AppActorCustomerInfo(appUserId: $appUserId, '
       '${entitlements.length} entitlements, '
       '${subscriptions.length} subscriptions, '
-      'activeKeys: $activeEntitlementKeys)';
+      'activeKeys: $activeEntitlementKeys, '
+      'verification: $verification)';
 
   @override
   bool operator ==(Object other) =>
@@ -139,7 +145,8 @@ class AppActorCustomerInfo {
           mapEquals(entitlements, other.entitlements) &&
           mapEquals(subscriptions, other.subscriptions) &&
           mapOfListsEquals(nonSubscriptions, other.nonSubscriptions) &&
-          mapOfListsEquals(productEntitlements, other.productEntitlements);
+          mapOfListsEquals(productEntitlements, other.productEntitlements) &&
+          verification == other.verification;
 
   @override
   int get hashCode => Object.hashAll([
@@ -155,6 +162,7 @@ class AppActorCustomerInfo {
         Object.hashAll(activeEntitlementKeys.toList()..sort()),
         entitlements.length,
         subscriptions.length,
+        verification,
       ]);
 }
 
