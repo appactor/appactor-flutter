@@ -10,16 +10,21 @@ abstract class MethodNames {
   static const purchasePackage = 'purchase_package';
   static const restorePurchases = 'restore_purchases';
   static const syncPurchases = 'sync_purchases';
+  static const quietSyncPurchases = 'quiet_sync_purchases';
+  static const drainReceiptQueueAndRefreshCustomer =
+      'drain_receipt_queue_and_refresh_customer';
   static const getCustomerInfo = 'get_customer_info';
   static const getOfferings = 'get_offerings';
   static const activeEntitlementsOffline = 'active_entitlement_keys_offline';
   static const getRemoteConfigs = 'get_remote_configs';
   static const getExperimentAssignment = 'get_experiment_assignment';
   static const setLogLevel = 'set_log_level';
-  static const enableAppleSearchAdsTracking = 'enable_apple_search_ads_tracking';
+  static const enableAppleSearchAdsTracking =
+      'enable_apple_search_ads_tracking';
   static const presentOfferCode = 'present_offer_code_redeem_sheet';
   static const getAsaDiagnostics = 'get_asa_diagnostics';
-  static const getPendingAsaPurchaseEventCount = 'get_pending_asa_purchase_event_count';
+  static const getPendingAsaPurchaseEventCount =
+      'get_pending_asa_purchase_event_count';
   static const getAsaFirstInstallOnDevice = 'get_asa_first_install_on_device';
   static const getAsaFirstInstallOnAccount = 'get_asa_first_install_on_account';
   static const getAppUserId = 'get_app_user_id';

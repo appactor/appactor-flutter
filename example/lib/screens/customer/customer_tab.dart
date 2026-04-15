@@ -18,6 +18,7 @@ class CustomerTab extends StatelessWidget {
     required this.onLogOut,
     required this.onRestorePurchases,
     required this.onSyncPurchases,
+    required this.onQuietSyncPurchases,
     required this.onRedeemOfferCode,
     required this.onReset,
     required this.onRefresh,
@@ -31,6 +32,7 @@ class CustomerTab extends StatelessWidget {
   final VoidCallback onLogOut;
   final VoidCallback onRestorePurchases;
   final VoidCallback onSyncPurchases;
+  final VoidCallback onQuietSyncPurchases;
   final VoidCallback onRedeemOfferCode;
   final VoidCallback onReset;
   final VoidCallback onRefresh;
@@ -83,8 +85,10 @@ class CustomerTab extends StatelessWidget {
         InfoRow('Configured', configured ? 'Yes' : 'No'),
         InfoRow('SDK Version', sdkVersion.isEmpty ? '—' : sdkVersion),
         if (customerInfo != null)
-          InfoRow('Offline Mode',
-              customerInfo!.isComputedOffline ? 'Yes' : 'No'),
+          InfoRow(
+            'Offline Mode',
+            customerInfo!.isComputedOffline ? 'Yes' : 'No',
+          ),
       ],
     );
   }
@@ -103,16 +107,20 @@ class CustomerTab extends StatelessWidget {
         Row(
           children: [
             Expanded(
-                child: FilledButton.icon(
-                    onPressed: onLogIn,
-                    icon: const Icon(Icons.login, size: 18),
-                    label: const Text('Log In'))),
+              child: FilledButton.icon(
+                onPressed: onLogIn,
+                icon: const Icon(Icons.login, size: 18),
+                label: const Text('Log In'),
+              ),
+            ),
             const SizedBox(width: 8),
             Expanded(
-                child: OutlinedButton.icon(
-                    onPressed: onLogOut,
-                    icon: const Icon(Icons.logout, size: 18),
-                    label: const Text('Log Out'))),
+              child: OutlinedButton.icon(
+                onPressed: onLogOut,
+                icon: const Icon(Icons.logout, size: 18),
+                label: const Text('Log Out'),
+              ),
+            ),
           ],
         ),
       ],
@@ -130,8 +138,8 @@ class CustomerTab extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-        '${customerInfo?.activeEntitlementKeys.length ?? 0} active',
-        style: theme.textTheme.labelSmall?.copyWith(color: cs.primary),
+            '${customerInfo?.activeEntitlementKeys.length ?? 0} active',
+            style: theme.textTheme.labelSmall?.copyWith(color: cs.primary),
           ),
           const SizedBox(width: 4),
           IconButton(
@@ -144,13 +152,22 @@ class CustomerTab extends StatelessWidget {
       ),
       children: [
         if (customerInfo?.activeEntitlementKeys.isNotEmpty ?? false)
-          _buildChipRow(context, 'Active',
-              customerInfo!.activeEntitlementKeys.toList(), cs.primaryContainer, cs.onPrimaryContainer),
+          _buildChipRow(
+            context,
+            'Active',
+            customerInfo!.activeEntitlementKeys.toList(),
+            cs.primaryContainer,
+            cs.onPrimaryContainer,
+          ),
         if (offlineKeys.isNotEmpty)
-          _buildChipRow(context, 'Offline',
-              offlineKeys.toList(), cs.tertiaryContainer, cs.onTertiaryContainer),
-        if (entitlements.isEmpty)
-          const EmptyStateText('No entitlements'),
+          _buildChipRow(
+            context,
+            'Offline',
+            offlineKeys.toList(),
+            cs.tertiaryContainer,
+            cs.onTertiaryContainer,
+          ),
+        if (entitlements.isEmpty) const EmptyStateText('No entitlements'),
         for (final entry in entitlements.entries) ...[
           const Divider(height: 20),
           _buildEntitlementDetail(context, entry.value),
@@ -159,17 +176,25 @@ class CustomerTab extends StatelessWidget {
     );
   }
 
-  Widget _buildChipRow(BuildContext context, String label, List<String> keys,
-      Color bg, Color fg) {
+  Widget _buildChipRow(
+    BuildContext context,
+    String label,
+    List<String> keys,
+    Color bg,
+    Color fg,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Wrap(
         spacing: 6,
         runSpacing: 4,
         children: [
-          Text('$label: ', style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          )),
+          Text(
+            '$label: ',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+          ),
           for (final key in keys)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -177,14 +202,24 @@ class CustomerTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6),
                 color: bg,
               ),
-              child: Text(key, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: fg)),
+              child: Text(
+                key,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: fg,
+                ),
+              ),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildEntitlementDetail(BuildContext context, AppActorEntitlementInfo e) {
+  Widget _buildEntitlementDetail(
+    BuildContext context,
+    AppActorEntitlementInfo e,
+  ) {
     final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,16 +227,20 @@ class CustomerTab extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 8, height: 8,
+              width: 8,
+              height: 8,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: e.isActive ? Colors.green : cs.error,
               ),
             ),
             const SizedBox(width: 8),
-            Text(e.identifier, style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            )),
+            Text(
+              e.identifier,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+            ),
           ],
         ),
         const SizedBox(height: 6),
@@ -212,22 +251,19 @@ class CustomerTab extends StatelessWidget {
         InfoRow('Will Renew', e.willRenew ? 'Yes' : 'No'),
         if (e.subscriptionStatus != null)
           InfoRow('Sub Status', e.subscriptionStatus!.wireValue),
-        if (e.expirationDate != null)
-          InfoRow('Expires', e.expirationDate!),
+        if (e.expirationDate != null) InfoRow('Expires', e.expirationDate!),
         if (e.originalPurchaseDate != null)
           InfoRow('Orig Purchase', e.originalPurchaseDate!),
         if (e.cancellationReason != null)
           InfoRow('Cancel Reason', e.cancellationReason!.wireValue),
         if (e.gracePeriodExpiresAt != null)
           InfoRow('Grace Expires', e.gracePeriodExpiresAt!),
-        if (e.grantedBy != null)
-          InfoRow('Granted By', e.grantedBy!),
+        if (e.grantedBy != null) InfoRow('Granted By', e.grantedBy!),
         if (e.activePromotionalOfferType != null)
           InfoRow('Promo Type', e.activePromotionalOfferType!),
         if (e.activePromotionalOfferId != null)
           InfoRow('Promo ID', e.activePromotionalOfferId!),
-        if (e.isSandbox == true)
-          InfoRow('Sandbox', 'Yes'),
+        if (e.isSandbox == true) InfoRow('Sandbox', 'Yes'),
       ],
     );
   }
@@ -237,8 +273,7 @@ class CustomerTab extends StatelessWidget {
     return SectionCard(
       title: 'Subscriptions (${subs.length})',
       children: [
-        if (subs.isEmpty)
-          const EmptyStateText('No subscriptions'),
+        if (subs.isEmpty) const EmptyStateText('No subscriptions'),
         for (final entry in subs.entries) ...[
           if (entry.key != subs.keys.first) const Divider(height: 20),
           _buildSubscriptionDetail(context, entry.value),
@@ -247,7 +282,10 @@ class CustomerTab extends StatelessWidget {
     );
   }
 
-  Widget _buildSubscriptionDetail(BuildContext context, AppActorSubscriptionInfo s) {
+  Widget _buildSubscriptionDetail(
+    BuildContext context,
+    AppActorSubscriptionInfo s,
+  ) {
     final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,7 +293,8 @@ class CustomerTab extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 8, height: 8,
+              width: 8,
+              height: 8,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: s.isActive ? Colors.green : cs.error,
@@ -263,24 +302,30 @@ class CustomerTab extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(s.subscriptionKey, style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              )),
+              child: Text(
+                s.subscriptionKey,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 6),
         InfoRow('Product', s.productIdentifier),
         InfoRow('Store', s.store.wireValue),
-        if (s.periodType != null)
-          InfoRow('Period', s.periodType!.wireValue),
-        if (s.status != null)
-          InfoRow('Status', s.status!),
-        InfoRow('Auto Renew', s.autoRenew == true ? 'Yes' : s.autoRenew == false ? 'No' : '—'),
-        if (s.expiresDate != null)
-          InfoRow('Expires', s.expiresDate!),
-        if (s.purchaseDate != null)
-          InfoRow('Purchased', s.purchaseDate!),
+        if (s.periodType != null) InfoRow('Period', s.periodType!.wireValue),
+        if (s.status != null) InfoRow('Status', s.status!),
+        InfoRow(
+          'Auto Renew',
+          s.autoRenew == true
+              ? 'Yes'
+              : s.autoRenew == false
+              ? 'No'
+              : '—',
+        ),
+        if (s.expiresDate != null) InfoRow('Expires', s.expiresDate!),
+        if (s.purchaseDate != null) InfoRow('Purchased', s.purchaseDate!),
         if (s.cancellationReason != null)
           InfoRow('Cancel Reason', s.cancellationReason!.wireValue),
         if (s.gracePeriodExpiresAt != null)
@@ -291,8 +336,7 @@ class CustomerTab extends StatelessWidget {
           InfoRow('Promo Type', s.activePromotionalOfferType!),
         if (s.activePromotionalOfferId != null)
           InfoRow('Promo ID', s.activePromotionalOfferId!),
-        if (s.isSandbox == true)
-          InfoRow('Sandbox', 'Yes'),
+        if (s.isSandbox == true) InfoRow('Sandbox', 'Yes'),
       ],
     );
   }
@@ -306,12 +350,9 @@ class CustomerTab extends StatelessWidget {
           for (final ns in entry.value) ...[
             InfoRow('Product', ns.productIdentifier),
             InfoRow('Store', ns.store.wireValue),
-            if (ns.purchaseDate != null)
-              InfoRow('Purchased', ns.purchaseDate!),
-            if (ns.isConsumable == true)
-              InfoRow('Consumable', 'Yes'),
-            if (ns.isRefund == true)
-              InfoRow('Refund', 'Yes'),
+            if (ns.purchaseDate != null) InfoRow('Purchased', ns.purchaseDate!),
+            if (ns.isConsumable == true) InfoRow('Consumable', 'Yes'),
+            if (ns.isRefund == true) InfoRow('Refund', 'Yes'),
             const Divider(height: 16),
           ],
       ],
@@ -322,11 +363,13 @@ class CustomerTab extends StatelessWidget {
     final tb = customerInfo!.tokenBalance!;
     return SectionCard(
       title: 'Token Balance',
-      trailing: Text('${tb.total}',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.bold,
-          )),
+      trailing: Text(
+        '${tb.total}',
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       children: [
         InfoRow('Renewable', '${tb.renewable}'),
         InfoRow('Non-Renewable', '${tb.nonRenewable}'),
@@ -354,22 +397,31 @@ class CustomerTab extends StatelessWidget {
           runSpacing: 8,
           children: [
             ActionChip(
-                avatar: const Icon(Icons.restore, size: 16),
-                label: const Text('Restore Purchases'),
-                onPressed: onRestorePurchases),
+              avatar: const Icon(Icons.restore, size: 16),
+              label: const Text('Restore Purchases'),
+              onPressed: onRestorePurchases,
+            ),
             ActionChip(
-                avatar: const Icon(Icons.sync, size: 16),
-                label: const Text('Sync Purchases'),
-                onPressed: onSyncPurchases),
+              avatar: const Icon(Icons.sync, size: 16),
+              label: const Text('Sync + Refresh'),
+              onPressed: onSyncPurchases,
+            ),
+            ActionChip(
+              avatar: const Icon(Icons.sync_disabled, size: 16),
+              label: const Text('Quiet Sync'),
+              onPressed: onQuietSyncPurchases,
+            ),
             if (Platform.isIOS)
               ActionChip(
-                  avatar: const Icon(Icons.card_giftcard, size: 16),
-                  label: const Text('Redeem Offer Code'),
-                  onPressed: onRedeemOfferCode),
+                avatar: const Icon(Icons.card_giftcard, size: 16),
+                label: const Text('Redeem Offer Code'),
+                onPressed: onRedeemOfferCode,
+              ),
             ActionChip(
-                avatar: const Icon(Icons.restart_alt, size: 16),
-                label: const Text('Reset SDK'),
-                onPressed: onReset),
+              avatar: const Icon(Icons.restart_alt, size: 16),
+              label: const Text('Reset SDK'),
+              onPressed: onReset,
+            ),
           ],
         ),
       ],

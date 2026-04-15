@@ -51,8 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _setupListeners() {
-    _customerInfoSub =
-        AppActor.instance.onCustomerInfoUpdated.listen((info) {
+    _customerInfoSub = AppActor.instance.onCustomerInfoUpdated.listen((info) {
       if (!mounted) return;
       setState(() {
         _customerInfo = info;
@@ -60,8 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     });
 
-    _receiptEventSub =
-        AppActor.instance.onReceiptPipelineEvent.listen((event) {
+    _receiptEventSub = AppActor.instance.onReceiptPipelineEvent.listen((event) {
       if (!mounted) return;
       setState(() {
         _addLog('Receipt: ${event.type} — ${event.productId}');
@@ -73,7 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _eventLog.insert(0, '[${TimeOfDay.now().format(context)}] $message');
     if (_eventLog.length > 50) _eventLog.removeLast();
   }
-
 
   Future<T?> _fetch<T>(String label, Future<T> Function() action) async {
     try {
@@ -99,9 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
       AppActor.instance.enableSearchAdsTracking();
       await AppActor.instance.configure(
         _apiKey,
-        options: const AppActorOptions(
-          logLevel: AppActorLogLevel.debug,
-        ),
+        options: const AppActorOptions(logLevel: AppActorLogLevel.debug),
       );
       await AppActor.instance.enableInstallReferrer();
       final version = await AppActor.instance.sdkVersion();
@@ -133,7 +128,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _fetchCustomerInfo() async {
-    final info = await _fetch('CustomerInfo', AppActor.instance.getCustomerInfo);
+    final info = await _fetch(
+      'CustomerInfo',
+      AppActor.instance.getCustomerInfo,
+    );
     if (info != null) setState(() => _customerInfo = info);
   }
 
@@ -143,8 +141,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _fetchRemoteConfigs() async {
-    final configs =
-        await _fetch('RemoteConfigs', AppActor.instance.getRemoteConfigs);
+    final configs = await _fetch(
+      'RemoteConfigs',
+      AppActor.instance.getRemoteConfigs,
+    );
     if (configs != null) setState(() => _remoteConfigs = configs);
   }
 
@@ -154,14 +154,18 @@ class _HomeScreenState extends State<HomeScreen> {
       () => AppActor.instance.getExperimentAssignment(key),
     );
     setState(() => _experiment = assignment);
-    _addLog(assignment != null
-        ? 'Experiment "$key": variant=${assignment.variantKey}'
-        : 'Experiment "$key": no assignment');
+    _addLog(
+      assignment != null
+          ? 'Experiment "$key": variant=${assignment.variantKey}'
+          : 'Experiment "$key": no assignment',
+    );
   }
 
   Future<void> _fetchOfflineKeys() async {
     final keys = await _fetch(
-        'OfflineKeys', AppActor.instance.activeEntitlementKeysOffline);
+      'OfflineKeys',
+      AppActor.instance.activeEntitlementKeysOffline,
+    );
     if (keys != null) setState(() => _offlineKeys = keys);
   }
 
@@ -225,7 +229,20 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final info = await AppActor.instance.syncPurchases();
       setState(() => _customerInfo = info);
-      _addLog('Purchases synced');
+      _addLog('Receipt queue drained and customer refreshed');
+    } on AppActorError catch (e) {
+      _addLog('Sync error: ${e.message}');
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _quietSyncPurchases() async {
+    setState(() => _loading = true);
+    try {
+      final info = await AppActor.instance.quietSyncPurchases();
+      setState(() => _customerInfo = info);
+      _addLog('Quiet purchase sync completed');
     } on AppActorError catch (e) {
       _addLog('Sync error: ${e.message}');
     } finally {
@@ -290,8 +307,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -304,9 +322,10 @@ class _HomeScreenState extends State<HomeScreen> {
             const Padding(
               padding: EdgeInsets.all(16),
               child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2)),
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
             ),
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -324,10 +343,11 @@ class _HomeScreenState extends State<HomeScreen> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.person), label: 'Customer'),
           NavigationDestination(
-              icon: Icon(Icons.shopping_bag), label: 'Offerings'),
+            icon: Icon(Icons.shopping_bag),
+            label: 'Offerings',
+          ),
           NavigationDestination(icon: Icon(Icons.tune), label: 'Config'),
-          NavigationDestination(
-              icon: Icon(Icons.terminal), label: 'Event Log'),
+          NavigationDestination(icon: Icon(Icons.terminal), label: 'Event Log'),
         ],
       ),
     );
@@ -341,14 +361,15 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline,
-                size: 48, color: theme.colorScheme.error),
+            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
             const SizedBox(height: 16),
             Text('Configuration Error', style: theme.textTheme.titleLarge),
             const SizedBox(height: 8),
-            Text(_error!,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: theme.colorScheme.error)),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: theme.colorScheme.error),
+            ),
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _configure,
@@ -374,6 +395,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onLogOut: _logOut,
           onRestorePurchases: _restorePurchases,
           onSyncPurchases: _syncPurchases,
+          onQuietSyncPurchases: _quietSyncPurchases,
           onRedeemOfferCode: () async {
             try {
               await AppActor.instance.presentOfferCodeRedeemSheet();

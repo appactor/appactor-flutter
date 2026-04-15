@@ -35,8 +35,8 @@ target 'Runner' do
     pod 'AppActor', :path => '../../../appactor-ios'
     pod 'AppActorPlugin', :path => '../../../appactor-ios'
   else
-    pod 'AppActor', :git => 'https://github.com/appactor/appactor-ios.git', :tag => '0.0.2'
-    pod 'AppActorPlugin', :git => 'https://github.com/appactor/appactor-ios.git', :tag => '0.0.2'
+    pod 'AppActor', :git => 'https://github.com/appactor/appactor-ios.git', :tag => '0.0.4'
+    pod 'AppActorPlugin', :git => 'https://github.com/appactor/appactor-ios.git', :tag => '0.0.4'
   end
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))

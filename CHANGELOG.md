@@ -1,3 +1,10 @@
+## 0.0.4
+
+- Updated native SDK dependencies to 0.0.4 (Android Maven Central + iOS CocoaPods/SPM).
+- Added `quietSyncPurchases()` and `drainReceiptQueueAndRefreshCustomer()` to match the new native plugin requests.
+- `syncPurchases()` now follows native 0.0.4 behavior and drains the receipt queue before refreshing customer info.
+- Refreshed README and example actions for the 0.0.4 purchase sync surface.
+
 ## 0.0.3
 
 - Updated native SDK dependencies to 0.0.3 (Android Maven Central + iOS CocoaPods/SPM).

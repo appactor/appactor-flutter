@@ -21,7 +21,7 @@ AppActor handles in-app purchases, subscriptions, and entitlements so you can fo
 
 ```yaml
 dependencies:
-  appactor_flutter: ^0.0.2
+  appactor_flutter: ^0.0.4
 ```
 
 ## Quick Start
@@ -30,18 +30,41 @@ dependencies:
 import 'package:appactor_flutter/appactor_flutter.dart';
 
 // Configure once
-await AppActor.instance.configure(apiKey: 'pk_YOUR_API_KEY');
+await AppActor.instance.configure('pk_YOUR_API_KEY');
 
 // Fetch offerings
-final offerings = await AppActor.instance.offerings();
+final offerings = await AppActor.instance.getOfferings();
 
 // Make a purchase
-final result = await AppActor.instance.purchase(package: offerings.current!.monthly!);
+final result = await AppActor.instance.purchasePackage(
+  offerings.current!.monthly!,
+);
 
 // Check entitlements
 final info = await AppActor.instance.getCustomerInfo();
 final isPremium = info.hasActiveEntitlement('premium');
 ```
+
+## Purchase Sync In 0.0.4
+
+```dart
+// Native 0.0.4 sync behavior:
+// drains the receipt queue, then refreshes customer info.
+final refreshed = await AppActor.instance.syncPurchases();
+
+// New in Flutter 0.0.4:
+// lightweight sync without draining the receipt queue.
+final quiet = await AppActor.instance.quietSyncPurchases();
+
+// Explicit queue-drain API exposed by the native plugins.
+final drained = await AppActor.instance.drainReceiptQueueAndRefreshCustomer();
+```
+
+## Platform Notes
+
+- Call `enableSearchAdsTracking()` before `configure()` if you use Apple Search Ads attribution on iOS.
+- Call `enableInstallReferrer()` after `configure()` if you want Google Play Install Referrer support on Android.
+- iOS-only APIs such as `presentOfferCodeRedeemSheet()`, `getAsaDiagnostics()`, and `purchaseFromIntent()` throw `UnsupportedError` on non-iOS platforms.
 
 ## Documentation
 
