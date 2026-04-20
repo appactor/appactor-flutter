@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'appactor_flutter'
-  s.version          = '0.0.4'
+  s.version          = '0.0.5'
   s.summary          = 'AppActor Flutter SDK — server-authoritative in-app purchase management.'
   s.description      = <<-DESC
 AppActor Flutter plugin wrapping the native AppActorPlugin SDK for iOS.
@@ -17,7 +17,7 @@ AppActor Flutter plugin wrapping the native AppActorPlugin SDK for iOS.
   s.dependency 'Flutter'
   s.platform = :ios, '15.0'
 
-  s.dependency 'AppActorPlugin', '0.0.4'
+  s.dependency 'AppActorPlugin', '0.0.8'
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.9'

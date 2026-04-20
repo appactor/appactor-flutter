@@ -21,7 +21,7 @@ AppActor handles in-app purchases, subscriptions, and entitlements so you can fo
 
 ```yaml
 dependencies:
-  appactor_flutter: ^0.0.4
+  appactor_flutter: ^0.0.5
 ```
 
 ## Quick Start
@@ -29,8 +29,13 @@ dependencies:
 ```dart
 import 'package:appactor_flutter/appactor_flutter.dart';
 
-// Configure once
-await AppActor.instance.configure('pk_YOUR_API_KEY');
+// Configure once. This returns after the native bootstrap flow completes.
+await AppActor.instance.configure(
+  'pk_YOUR_API_KEY',
+  // Optional: pass appUserId to start with an explicit identity.
+  // Omit it to reuse a cached ID or create a new anonymous user.
+  appUserId: 'user_123',
+);
 
 // Fetch offerings
 final offerings = await AppActor.instance.getOfferings();
@@ -45,14 +50,14 @@ final info = await AppActor.instance.getCustomerInfo();
 final isPremium = info.hasActiveEntitlement('premium');
 ```
 
-## Purchase Sync In 0.0.4
+## Purchase Sync In 0.0.5
 
 ```dart
-// Native 0.0.4 sync behavior:
+// Current native sync behavior:
 // drains the receipt queue, then refreshes customer info.
 final refreshed = await AppActor.instance.syncPurchases();
 
-// New in Flutter 0.0.4:
+// Available in Flutter 0.0.5:
 // lightweight sync without draining the receipt queue.
 final quiet = await AppActor.instance.quietSyncPurchases();
 
@@ -62,6 +67,8 @@ final drained = await AppActor.instance.drainReceiptQueueAndRefreshCustomer();
 
 ## Platform Notes
 
+- `configure()` returns after the native SDK finishes bootstrap.
+- Pass `appUserId:` to `configure()` if you want to start with a known user ID.
 - Call `enableSearchAdsTracking()` before `configure()` if you use Apple Search Ads attribution on iOS.
 - Call `enableInstallReferrer()` after `configure()` if you want Google Play Install Referrer support on Android.
 - iOS-only APIs such as `presentOfferCodeRedeemSheet()`, `getAsaDiagnostics()`, and `purchaseFromIntent()` throw `UnsupportedError` on non-iOS platforms.

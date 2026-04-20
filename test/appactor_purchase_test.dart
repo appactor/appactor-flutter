@@ -49,7 +49,7 @@ void main() {
         .setMockMethodCallHandler(channel, null);
   });
 
-  test('syncPurchases uses the 0.0.4 sync wire method', () async {
+  test('syncPurchases uses the sync wire method', () async {
     final info = await AppActor.instance.syncPurchases();
 
     expect(info.appUserId, 'user_123');

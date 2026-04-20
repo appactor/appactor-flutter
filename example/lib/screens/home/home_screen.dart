@@ -18,7 +18,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _configured = false;
+  bool _sdkReady = false;
   String _sdkVersion = '';
   String? _error;
 
@@ -100,13 +100,12 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       await AppActor.instance.enableInstallReferrer();
       final version = await AppActor.instance.sdkVersion();
-      final configured = await AppActor.instance.isConfigured();
       setState(() {
-        _configured = configured;
+        _sdkReady = true;
         _sdkVersion = version;
         _error = null;
       });
-      _addLog('SDK configured (v$version)');
+      _addLog('SDK ready after bootstrap (v$version)');
       await _refreshAll();
     } on AppActorError catch (e) {
       setState(() => _error = e.toString());
@@ -280,7 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       await AppActor.instance.reset();
       setState(() {
-        _configured = false;
+        _sdkReady = false;
         _customerInfo = null;
         _offerings = null;
         _remoteConfigs = null;
@@ -329,14 +328,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _configured ? _refreshAll : null,
+            onPressed: _sdkReady ? _refreshAll : null,
             tooltip: 'Refresh all',
           ),
         ],
       ),
-      body: _error != null && !_configured
-          ? _buildErrorState()
-          : _buildContent(),
+      body: _error != null && !_sdkReady ? _buildErrorState() : _buildContent(),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedTab,
         onDestinationSelected: (i) => setState(() => _selectedTab = i),
@@ -387,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
       index: _selectedTab,
       children: [
         CustomerTab(
-          configured: _configured,
+          ready: _sdkReady,
           sdkVersion: _sdkVersion,
           customerInfo: _customerInfo,
           offlineKeys: _offlineKeys,

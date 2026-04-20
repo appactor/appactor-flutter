@@ -10,14 +10,23 @@ void main() {
     expect(appActor, isNotNull);
   });
 
-  testWidgets('isConfigured returns false before configure',
-      (WidgetTester tester) async {
-    final configured = await AppActor.instance.isConfigured();
-    expect(configured, isFalse);
+  testWidgets('getAppUserId returns null before configure', (
+    WidgetTester tester,
+  ) async {
+    final appUserId = await AppActor.instance.getAppUserId();
+    expect(appUserId, isNull);
   });
 
-  testWidgets('sdkVersion returns a non-empty string',
-      (WidgetTester tester) async {
+  testWidgets('getIsAnonymous returns true before configure', (
+    WidgetTester tester,
+  ) async {
+    final isAnonymous = await AppActor.instance.getIsAnonymous();
+    expect(isAnonymous, isTrue);
+  });
+
+  testWidgets('sdkVersion returns a non-empty string', (
+    WidgetTester tester,
+  ) async {
     final version = await AppActor.instance.sdkVersion();
     expect(version, isNotEmpty);
   });

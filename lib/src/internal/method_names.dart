@@ -3,7 +3,6 @@
 abstract class MethodNames {
   static const configure = 'configure';
   static const reset = 'reset';
-  static const isConfigured = 'is_configured';
   static const getSdkVersion = 'get_sdk_version';
   static const logIn = 'log_in';
   static const logOut = 'log_out';

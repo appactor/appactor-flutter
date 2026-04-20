@@ -21,14 +21,10 @@ enum AppActorLogLevel {
 class AppActorOptions {
   final AppActorLogLevel? logLevel;
 
-  const AppActorOptions({
-    this.logLevel,
-  });
+  const AppActorOptions({this.logLevel});
 
   Map<String, dynamic> toJson() {
-    return {
-      if (logLevel != null) 'log_level': logLevel!.wireValue,
-    };
+    return {if (logLevel != null) 'log_level': logLevel!.wireValue};
   }
 
   @override
@@ -43,6 +39,32 @@ class AppActorOptions {
 
   @override
   int get hashCode => logLevel.hashCode;
+}
+
+/// Platform-specific public API keys for Flutter wrappers.
+///
+/// Pass this to `AppActor.instance.configure(...)` when your iOS and Android
+/// apps use different AppActor public keys.
+@immutable
+class AppActorPlatformKeys {
+  final String ios;
+  final String android;
+
+  const AppActorPlatformKeys({required this.ios, required this.android});
+
+  @override
+  String toString() => 'AppActorPlatformKeys(ios: $ios, android: $android)';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AppActorPlatformKeys &&
+          runtimeType == other.runtimeType &&
+          ios == other.ios &&
+          android == other.android;
+
+  @override
+  int get hashCode => Object.hash(ios, android);
 }
 
 /// Configuration for Apple Search Ads attribution tracking.
@@ -72,7 +94,8 @@ class AppActorAsaOptions {
   }
 
   @override
-  String toString() => 'AppActorAsaOptions('
+  String toString() =>
+      'AppActorAsaOptions('
       'autoTrackPurchases: $autoTrackPurchases, '
       'trackInSandbox: $trackInSandbox, '
       'debugMode: $debugMode)';

@@ -1,3 +1,10 @@
+## 0.0.5
+
+- Updated native SDK dependencies to `0.0.8` on Android Maven Central and iOS CocoaPods/SPM.
+- Breaking: removed `isConfigured()` to match the native plugin contract. `configure()` is now the readiness boundary and returns after native bootstrap completes.
+- Added `configure(..., appUserId: ...)` so Flutter can start with an explicit identity or let native reuse/create the anonymous user during bootstrap.
+- `configure()` now sends canonical nested `options.platform_info` metadata to the native plugins.
+
 ## 0.0.4
 
 - Updated native SDK dependencies to 0.0.4 (Android Maven Central + iOS CocoaPods/SPM).

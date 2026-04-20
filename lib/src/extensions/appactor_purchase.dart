@@ -36,7 +36,7 @@ extension AppActorPurchase on AppActor {
     return AppActorCustomerInfo.fromJson(result);
   }
 
-  /// Mirrors native 0.0.4 `sync_purchases` semantics:
+  /// Mirrors the current native `sync_purchases` semantics:
   /// drains the receipt queue and refreshes customer info.
   Future<AppActorCustomerInfo> syncPurchases() async {
     final result = await AppActorPlatform.execute(MethodNames.syncPurchases);
@@ -51,7 +51,7 @@ extension AppActorPurchase on AppActor {
     return AppActorCustomerInfo.fromJson(result);
   }
 
-  /// Explicit queue-drain + customer refresh call added in native SDK 0.0.4.
+  /// Explicit queue-drain + customer refresh call exposed by the native SDK.
   Future<AppActorCustomerInfo> drainReceiptQueueAndRefreshCustomer() async {
     final result = await AppActorPlatform.execute(
       MethodNames.drainReceiptQueueAndRefreshCustomer,

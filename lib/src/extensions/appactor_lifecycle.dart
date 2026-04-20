@@ -20,25 +20,31 @@ extension AppActorLifecycle on AppActor {
   }
 
   /// Configures the SDK with the given API key.
-  /// Idempotent: safe to call on hot restart — silently skips if already configured.
+  ///
+  /// Accepts either a single `String` API key or `AppActorPlatformKeys`
+  /// for apps that use separate iOS and Android public keys.
+  ///
+  /// Returns when the native SDK has completed its startup/bootstrap flow.
+  /// Pass [appUserId] to start with an explicit identity. When omitted, the
+  /// native SDK reuses a cached ID or creates a new anonymous user.
   Future<void> configure(
-    String apiKey, {
+    Object apiKey, {
+    String? appUserId,
     AppActorOptions? options,
   }) async {
     // Hot restart safety: native SDK stays alive across Dart VM restarts.
     // Re-register the method call handler so events flow again.
     AppActorPlatform.ensureInitialized();
-    final configured = await isConfigured();
-
-    if (!configured) {
-      final params = <String, dynamic>{
+    final resolvedApiKey = _resolveApiKey(apiKey);
+    final params = <String, dynamic>{
+      'api_key': resolvedApiKey,
+      if (appUserId != null) 'app_user_id': appUserId,
+      'options': {
         ...?options?.toJson(),
-        'api_key': apiKey,
-        'platform_flavor': 'flutter',
-        'platform_version': appActorSdkVersion,
-      };
-      await AppActorPlatform.execute(MethodNames.configure, params);
-    }
+        'platform_info': {'flavor': 'flutter', 'version': appActorSdkVersion},
+      },
+    };
+    await AppActorPlatform.execute(MethodNames.configure, params);
 
     if (_searchAdsOptions != null &&
         defaultTargetPlatform == TargetPlatform.iOS) {
@@ -53,11 +59,6 @@ extension AppActorLifecycle on AppActor {
     await AppActorPlatform.execute(MethodNames.reset);
     AppActorPlatform.resetState();
     _searchAdsOptions = null;
-  }
-
-  Future<bool> isConfigured() async {
-    final result = await AppActorPlatform.execute(MethodNames.isConfigured);
-    return result['value'] == true;
   }
 
   Future<String> sdkVersion() async {
@@ -77,4 +78,29 @@ extension AppActorLifecycle on AppActor {
     if (!Platform.isAndroid) return;
     await AppActorPlatform.execute(MethodNames.enableInstallReferrer);
   }
+}
+
+String _resolveApiKey(Object apiKey) {
+  if (apiKey is String) return apiKey;
+  if (apiKey is AppActorPlatformKeys) {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return apiKey.ios;
+      case TargetPlatform.android:
+        return apiKey.android;
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.macOS:
+      case TargetPlatform.windows:
+        throw UnsupportedError(
+          'AppActorPlatformKeys is only supported on iOS and Android.',
+        );
+    }
+  }
+
+  throw ArgumentError.value(
+    apiKey,
+    'apiKey',
+    'Expected a String or AppActorPlatformKeys.',
+  );
 }

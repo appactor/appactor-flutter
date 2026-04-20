@@ -10,7 +10,7 @@ import '../../widgets/empty_state_text.dart';
 class CustomerTab extends StatelessWidget {
   const CustomerTab({
     super.key,
-    required this.configured,
+    required this.ready,
     required this.sdkVersion,
     required this.customerInfo,
     required this.offlineKeys,
@@ -24,7 +24,7 @@ class CustomerTab extends StatelessWidget {
     required this.onRefresh,
   });
 
-  final bool configured;
+  final bool ready;
   final String sdkVersion;
   final AppActorCustomerInfo? customerInfo;
   final Set<String> offlineKeys;
@@ -78,11 +78,11 @@ class CustomerTab extends StatelessWidget {
         height: 10,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: configured ? Colors.green : cs.error,
+          color: ready ? Colors.green : cs.error,
         ),
       ),
       children: [
-        InfoRow('Configured', configured ? 'Yes' : 'No'),
+        InfoRow('Ready', ready ? 'Yes' : 'No'),
         InfoRow('SDK Version', sdkVersion.isEmpty ? '—' : sdkVersion),
         if (customerInfo != null)
           InfoRow(
