@@ -21,7 +21,7 @@ AppActor handles in-app purchases, subscriptions, and entitlements so you can fo
 
 ```yaml
 dependencies:
-  appactor_flutter: ^0.0.5
+  appactor_flutter: ^0.0.6
 ```
 
 ## Quick Start
@@ -50,15 +50,14 @@ final info = await AppActor.instance.getCustomerInfo();
 final isPremium = info.hasActiveEntitlement('premium');
 ```
 
-## Purchase Sync In 0.0.5
+## Purchase Sync
 
 ```dart
 // Current native sync behavior:
 // drains the receipt queue, then refreshes customer info.
 final refreshed = await AppActor.instance.syncPurchases();
 
-// Available in Flutter 0.0.5:
-// lightweight sync without draining the receipt queue.
+// Lightweight sync without draining the receipt queue.
 final quiet = await AppActor.instance.quietSyncPurchases();
 
 // Explicit queue-drain API exposed by the native plugins.

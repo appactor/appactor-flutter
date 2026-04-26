@@ -1,3 +1,10 @@
+## 0.0.6
+
+- Updated native SDK dependencies to `0.0.9` on Android Maven Central and iOS CocoaPods/SPM.
+- Native: Android purchase lookup now resolves through `storeProductId` while preserving public product identifiers.
+- Native: hardened identity-transition purchase update handling and remote config / experiment cache isolation.
+- Native: iOS response signature checks now bind cacheable requests to the full path/query target.
+
 ## 0.0.5
 
 - Updated native SDK dependencies to `0.0.8` on Android Maven Central and iOS CocoaPods/SPM.

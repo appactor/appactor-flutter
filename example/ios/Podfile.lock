@@ -1,30 +1,30 @@
 PODS:
-  - AppActor (0.0.8)
-  - appactor_flutter (0.0.5):
-    - AppActorPlugin (= 0.0.8)
+  - AppActor (0.0.9)
+  - appactor_flutter (0.0.6):
+    - AppActorPlugin (= 0.0.9)
     - Flutter
-  - AppActorPlugin (0.0.8):
-    - AppActor (= 0.0.8)
+  - AppActorPlugin (0.0.9):
+    - AppActor (= 0.0.9)
   - Flutter (1.0.0)
   - integration_test (0.0.1):
     - Flutter
 
 DEPENDENCIES:
-  - AppActor (from `https://github.com/appactor/appactor-ios.git`, tag `0.0.8`)
+  - AppActor (from `https://github.com/appactor/appactor-ios.git`, tag `0.0.9`)
   - appactor_flutter (from `.symlinks/plugins/appactor_flutter/ios`)
-  - AppActorPlugin (from `https://github.com/appactor/appactor-ios.git`, tag `0.0.8`)
+  - AppActorPlugin (from `https://github.com/appactor/appactor-ios.git`, tag `0.0.9`)
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
 
 EXTERNAL SOURCES:
   AppActor:
     :git: https://github.com/appactor/appactor-ios.git
-    :tag: 0.0.8
+    :tag: 0.0.9
   appactor_flutter:
     :path: ".symlinks/plugins/appactor_flutter/ios"
   AppActorPlugin:
     :git: https://github.com/appactor/appactor-ios.git
-    :tag: 0.0.8
+    :tag: 0.0.9
   Flutter:
     :path: Flutter
   integration_test:
@@ -33,18 +33,18 @@ EXTERNAL SOURCES:
 CHECKOUT OPTIONS:
   AppActor:
     :git: https://github.com/appactor/appactor-ios.git
-    :tag: 0.0.8
+    :tag: 0.0.9
   AppActorPlugin:
     :git: https://github.com/appactor/appactor-ios.git
-    :tag: 0.0.8
+    :tag: 0.0.9
 
 SPEC CHECKSUMS:
-  AppActor: 9c15bdf8ed3d7dc71b7180d15a45589e0e630ffe
-  appactor_flutter: b1cfd3ef6694992b02bb9512d53a88dfde8c41eb
-  AppActorPlugin: d4b1304fcf72e5893528201c230dba48630f28a9
+  AppActor: 68d13bd272bfad80eeb1c3963fb8b33a92ae995a
+  appactor_flutter: 13f71428b60b0fe44cd411862f4c3b79f38a369c
+  AppActorPlugin: c2358bf996277d1d960d55b93c8e99fcde8f7b63
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
 
-PODFILE CHECKSUM: feeb5b892dbbee44f7aad9d9c051688d9dc69579
+PODFILE CHECKSUM: 93d9e50536f4d32ab9bdd9c52f62f2c23d7fe03c
 
 COCOAPODS: 1.16.2
