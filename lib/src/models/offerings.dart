@@ -38,8 +38,7 @@ class AppActorOfferings {
     }
     return AppActorOfferings(
       current: json['current'] != null
-          ? AppActorOffering.fromJson(
-              json['current'] as Map<String, dynamic>)
+          ? AppActorOffering.fromJson(json['current'] as Map<String, dynamic>)
           : null,
       all: allMap,
       productEntitlements: json['product_entitlements'] != null
@@ -51,7 +50,8 @@ class AppActorOfferings {
             )
           : const {},
       verification: AppActorVerificationResult.fromString(
-          json['verification'] as String? ?? 'notRequested'),
+        json['verification'] as String? ?? 'notRequested',
+      ),
     );
   }
 
@@ -72,7 +72,11 @@ class AppActorOfferings {
 
   @override
   int get hashCode => Object.hash(
-      current, all.length, productEntitlements.length, verification);
+    current,
+    all.length,
+    productEntitlements.length,
+    verification,
+  );
 }
 
 @immutable
@@ -126,9 +130,8 @@ class AppActorOffering {
           : null,
       packages: json['packages'] is List
           ? (json['packages'] as List)
-              .map((e) =>
-                  AppActorPackage.fromJson(e as Map<String, dynamic>))
-              .toList()
+                .map((e) => AppActorPackage.fromJson(e as Map<String, dynamic>))
+                .toList()
           : const [],
     );
   }
@@ -166,6 +169,7 @@ class AppActorPackage {
   final String? basePlanId;
   final String? offerId;
   final String? localizedPriceString;
+  final int? priceAmountMicros;
   final double? price;
   final String? currencyCode;
   final String? displayName;
@@ -187,6 +191,7 @@ class AppActorPackage {
     this.basePlanId,
     this.offerId,
     this.localizedPriceString,
+    this.priceAmountMicros,
     this.price,
     this.currencyCode,
     this.displayName,
@@ -200,15 +205,15 @@ class AppActorPackage {
   });
 
   Map<String, dynamic> toPurchaseParams() => {
-        'package_id': id,
-        if (storeProductId != null) 'store_product_id': storeProductId,
-        'product_id': productId,
-        'product_type': productType.wireValue,
-        'store': store.wireValue,
-        if (basePlanId != null) 'base_plan_id': basePlanId,
-        if (offerId != null) 'offer_id': offerId,
-        if (offeringId != null) 'offering_id': offeringId,
-      };
+    'package_id': id,
+    if (storeProductId != null) 'store_product_id': storeProductId,
+    'product_id': productId,
+    'product_type': productType.wireValue,
+    'store': store.wireValue,
+    if (basePlanId != null) 'base_plan_id': basePlanId,
+    if (offerId != null) 'offer_id': offerId,
+    if (offeringId != null) 'offering_id': offeringId,
+  };
 
   @Deprecated('Use toPurchaseParams() instead')
   Map<String, dynamic> toJson() => toPurchaseParams();
@@ -217,15 +222,18 @@ class AppActorPackage {
     return AppActorPackage(
       id: json['id'] as String? ?? '',
       packageType: AppActorPackageType.fromString(
-          json['package_type'] as String? ?? 'custom'),
+        json['package_type'] as String? ?? 'custom',
+      ),
       productId: json['product_id'] as String? ?? '',
       storeProductId: json['store_product_id'] as String?,
       productType: AppActorProductType.fromString(
-          json['product_type'] as String? ?? 'unknown'),
+        json['product_type'] as String? ?? 'unknown',
+      ),
       store: AppActorStore.fromString(json['store'] as String? ?? 'unknown'),
       basePlanId: json['base_plan_id'] as String?,
       offerId: json['offer_id'] as String?,
       localizedPriceString: json['localized_price_string'] as String?,
+      priceAmountMicros: (json['price_amount_micros'] as num?)?.toInt(),
       price: (json['price'] as num?)?.toDouble(),
       currencyCode: json['currency_code'] as String?,
       displayName: json['display_name'] as String?,
@@ -260,6 +268,7 @@ class AppActorPackage {
           basePlanId == other.basePlanId &&
           offerId == other.offerId &&
           localizedPriceString == other.localizedPriceString &&
+          priceAmountMicros == other.priceAmountMicros &&
           price == other.price &&
           currencyCode == other.currencyCode &&
           displayName == other.displayName &&
@@ -273,9 +282,25 @@ class AppActorPackage {
 
   @override
   int get hashCode => Object.hashAll([
-        id, packageType, productId, storeProductId, productType, store,
-        basePlanId, offerId, localizedPriceString, price, currencyCode,
-        displayName, productName, productDescription, metadata?.length,
-        tokenAmount, position, serverId, offeringId,
-      ]);
+    id,
+    packageType,
+    productId,
+    storeProductId,
+    productType,
+    store,
+    basePlanId,
+    offerId,
+    localizedPriceString,
+    priceAmountMicros,
+    price,
+    currencyCode,
+    displayName,
+    productName,
+    productDescription,
+    metadata?.length,
+    tokenAmount,
+    position,
+    serverId,
+    offeringId,
+  ]);
 }

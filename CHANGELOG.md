@@ -1,3 +1,8 @@
+## 0.0.7
+
+- Updated the Android native dependency to `0.1.0`.
+- Exposed optional package `price_amount_micros` parsing for Android price visibility while leaving iOS payloads compatible.
+
 ## 0.0.6
 
 - Updated native SDK dependencies to `0.0.9` on Android Maven Central and iOS CocoaPods/SPM.
