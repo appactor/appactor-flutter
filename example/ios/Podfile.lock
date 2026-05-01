@@ -1,6 +1,6 @@
 PODS:
   - AppActor (0.0.9)
-  - appactor_flutter (0.0.6):
+  - appactor_flutter (0.0.7):
     - AppActorPlugin (= 0.0.9)
     - Flutter
   - AppActorPlugin (0.0.9):
@@ -40,7 +40,7 @@ CHECKOUT OPTIONS:
 
 SPEC CHECKSUMS:
   AppActor: 68d13bd272bfad80eeb1c3963fb8b33a92ae995a
-  appactor_flutter: 13f71428b60b0fe44cd411862f4c3b79f38a369c
+  appactor_flutter: 00ef55e32a73f091acb2ee201fe46b50130ca067
   AppActorPlugin: c2358bf996277d1d960d55b93c8e99fcde8f7b63
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e

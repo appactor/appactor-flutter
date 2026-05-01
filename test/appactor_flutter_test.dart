@@ -99,9 +99,7 @@ void main() {
     });
 
     test('toString', () {
-      final info = AppActorCustomerInfo.fromJson({
-        'app_user_id': 'user_1',
-      });
+      final info = AppActorCustomerInfo.fromJson({'app_user_id': 'user_1'});
       expect(info.toString(), contains('user_1'));
     });
   });
@@ -122,6 +120,7 @@ void main() {
               'product_type': 'subscription',
               'store': 'app_store',
               'price': 9.99,
+              'price_amount_micros': 9990000,
               'currency_code': 'USD',
               'localized_price_string': '\$9.99',
             },
@@ -138,6 +137,7 @@ void main() {
       expect(offerings.current!.metadata, {'tier': 'standard'});
       expect(offerings.current!.packages.length, 1);
       expect(offerings.current!.packages.first.price, 9.99);
+      expect(offerings.current!.packages.first.priceAmountMicros, 9990000);
       expect(offerings.productEntitlements['com.app.monthly'], ['premium']);
     });
 
@@ -191,23 +191,37 @@ void main() {
 
   group('AppActorPurchaseStatus', () {
     test('fromString parses valid values', () {
-      expect(AppActorPurchaseStatus.fromString('purchased'),
-          AppActorPurchaseStatus.purchased);
-      expect(AppActorPurchaseStatus.fromString('success'),
-          AppActorPurchaseStatus.purchased);
-      expect(AppActorPurchaseStatus.fromString('cancelled'),
-          AppActorPurchaseStatus.cancelled);
-      expect(AppActorPurchaseStatus.fromString('pending'),
-          AppActorPurchaseStatus.pending);
-      expect(AppActorPurchaseStatus.fromString('restored'),
-          AppActorPurchaseStatus.restored);
+      expect(
+        AppActorPurchaseStatus.fromString('purchased'),
+        AppActorPurchaseStatus.purchased,
+      );
+      expect(
+        AppActorPurchaseStatus.fromString('success'),
+        AppActorPurchaseStatus.purchased,
+      );
+      expect(
+        AppActorPurchaseStatus.fromString('cancelled'),
+        AppActorPurchaseStatus.cancelled,
+      );
+      expect(
+        AppActorPurchaseStatus.fromString('pending'),
+        AppActorPurchaseStatus.pending,
+      );
+      expect(
+        AppActorPurchaseStatus.fromString('restored'),
+        AppActorPurchaseStatus.restored,
+      );
     });
 
     test('fromString returns unknown for invalid values', () {
-      expect(AppActorPurchaseStatus.fromString('invalid'),
-          AppActorPurchaseStatus.unknown);
-      expect(AppActorPurchaseStatus.fromString(''),
-          AppActorPurchaseStatus.unknown);
+      expect(
+        AppActorPurchaseStatus.fromString('invalid'),
+        AppActorPurchaseStatus.unknown,
+      );
+      expect(
+        AppActorPurchaseStatus.fromString(''),
+        AppActorPurchaseStatus.unknown,
+      );
     });
   });
 
@@ -301,7 +315,9 @@ void main() {
         'experiment_key': 'ek',
         'variant_id': 'v1',
         'variant_key': 'vk',
-        'payload': {'nested': [1, 2, 3]},
+        'payload': {
+          'nested': [1, 2, 3],
+        },
         'value_type': 'json',
         'assigned_at': '2026-01-01',
       };
@@ -383,10 +399,7 @@ void main() {
     });
 
     test('toString', () {
-      const intent = AppActorPurchaseIntent(
-        intentId: 'id',
-        productId: 'pid',
-      );
+      const intent = AppActorPurchaseIntent(intentId: 'id', productId: 'pid');
       expect(intent.toString(), contains('intentId: id'));
       expect(intent.toString(), contains('productId: pid'));
     });
@@ -394,21 +407,33 @@ void main() {
 
   group('AppActorVerificationResult', () {
     test('fromString parses wire values', () {
-      expect(AppActorVerificationResult.fromString('notRequested'),
-          AppActorVerificationResult.notRequested);
-      expect(AppActorVerificationResult.fromString('verified'),
-          AppActorVerificationResult.verified);
-      expect(AppActorVerificationResult.fromString('verifiedOnDevice'),
-          AppActorVerificationResult.verifiedOnDevice);
-      expect(AppActorVerificationResult.fromString('failed'),
-          AppActorVerificationResult.failed);
+      expect(
+        AppActorVerificationResult.fromString('notRequested'),
+        AppActorVerificationResult.notRequested,
+      );
+      expect(
+        AppActorVerificationResult.fromString('verified'),
+        AppActorVerificationResult.verified,
+      );
+      expect(
+        AppActorVerificationResult.fromString('verifiedOnDevice'),
+        AppActorVerificationResult.verifiedOnDevice,
+      );
+      expect(
+        AppActorVerificationResult.fromString('failed'),
+        AppActorVerificationResult.failed,
+      );
     });
 
     test('fromString returns notRequested for unknown', () {
-      expect(AppActorVerificationResult.fromString('garbage'),
-          AppActorVerificationResult.notRequested);
-      expect(AppActorVerificationResult.fromString(''),
-          AppActorVerificationResult.notRequested);
+      expect(
+        AppActorVerificationResult.fromString('garbage'),
+        AppActorVerificationResult.notRequested,
+      );
+      expect(
+        AppActorVerificationResult.fromString(''),
+        AppActorVerificationResult.notRequested,
+      );
     });
 
     test('isVerified', () {
@@ -436,9 +461,7 @@ void main() {
     });
 
     test('fromJson defaults verification to notRequested', () {
-      final info = AppActorCustomerInfo.fromJson({
-        'app_user_id': 'user_1',
-      });
+      final info = AppActorCustomerInfo.fromJson({'app_user_id': 'user_1'});
       expect(info.verification, AppActorVerificationResult.notRequested);
     });
 
@@ -466,8 +489,7 @@ void main() {
 
     test('fromJson defaults verification to notRequested', () {
       final offerings = AppActorOfferings.fromJson({'all': {}});
-      expect(
-          offerings.verification, AppActorVerificationResult.notRequested);
+      expect(offerings.verification, AppActorVerificationResult.notRequested);
     });
 
     test('verification affects equality', () {
@@ -487,8 +509,10 @@ void main() {
         'all': {},
         'verification': 'verifiedOnDevice',
       });
-      expect(offerings.verification,
-          AppActorVerificationResult.verifiedOnDevice);
+      expect(
+        offerings.verification,
+        AppActorVerificationResult.verifiedOnDevice,
+      );
       expect(offerings.verification.isVerified, true);
     });
   });
@@ -500,7 +524,10 @@ void main() {
       expect(AppActorStore.fromString('play_store'), AppActorStore.playStore);
       expect(AppActorStore.fromString('app_store'), AppActorStore.appStore);
       expect(AppActorStore.fromString('stripe'), AppActorStore.stripe);
-      expect(AppActorStore.fromString('promotional'), AppActorStore.promotional);
+      expect(
+        AppActorStore.fromString('promotional'),
+        AppActorStore.promotional,
+      );
       expect(AppActorStore.fromString('unknown'), AppActorStore.unknown);
     });
 
@@ -523,28 +550,76 @@ void main() {
 
   group('AppActorPackageType', () {
     test('fromString parses wire values', () {
-      expect(AppActorPackageType.fromString('weekly'), AppActorPackageType.weekly);
-      expect(AppActorPackageType.fromString('monthly'), AppActorPackageType.monthly);
-      expect(AppActorPackageType.fromString('two_month'), AppActorPackageType.twoMonth);
-      expect(AppActorPackageType.fromString('three_month'), AppActorPackageType.threeMonth);
-      expect(AppActorPackageType.fromString('six_month'), AppActorPackageType.sixMonth);
-      expect(AppActorPackageType.fromString('annual'), AppActorPackageType.annual);
-      expect(AppActorPackageType.fromString('lifetime'), AppActorPackageType.lifetime);
-      expect(AppActorPackageType.fromString('consumable'), AppActorPackageType.consumable);
-      expect(AppActorPackageType.fromString('custom'), AppActorPackageType.custom);
+      expect(
+        AppActorPackageType.fromString('weekly'),
+        AppActorPackageType.weekly,
+      );
+      expect(
+        AppActorPackageType.fromString('monthly'),
+        AppActorPackageType.monthly,
+      );
+      expect(
+        AppActorPackageType.fromString('two_month'),
+        AppActorPackageType.twoMonth,
+      );
+      expect(
+        AppActorPackageType.fromString('three_month'),
+        AppActorPackageType.threeMonth,
+      );
+      expect(
+        AppActorPackageType.fromString('six_month'),
+        AppActorPackageType.sixMonth,
+      );
+      expect(
+        AppActorPackageType.fromString('annual'),
+        AppActorPackageType.annual,
+      );
+      expect(
+        AppActorPackageType.fromString('lifetime'),
+        AppActorPackageType.lifetime,
+      );
+      expect(
+        AppActorPackageType.fromString('consumable'),
+        AppActorPackageType.consumable,
+      );
+      expect(
+        AppActorPackageType.fromString('custom'),
+        AppActorPackageType.custom,
+      );
     });
 
     test('fromString handles aliases', () {
-      expect(AppActorPackageType.fromString('twoMonth'), AppActorPackageType.twoMonth);
-      expect(AppActorPackageType.fromString('two_months'), AppActorPackageType.twoMonth);
-      expect(AppActorPackageType.fromString('threeMonth'), AppActorPackageType.threeMonth);
-      expect(AppActorPackageType.fromString('three_months'), AppActorPackageType.threeMonth);
-      expect(AppActorPackageType.fromString('sixMonth'), AppActorPackageType.sixMonth);
-      expect(AppActorPackageType.fromString('six_months'), AppActorPackageType.sixMonth);
+      expect(
+        AppActorPackageType.fromString('twoMonth'),
+        AppActorPackageType.twoMonth,
+      );
+      expect(
+        AppActorPackageType.fromString('two_months'),
+        AppActorPackageType.twoMonth,
+      );
+      expect(
+        AppActorPackageType.fromString('threeMonth'),
+        AppActorPackageType.threeMonth,
+      );
+      expect(
+        AppActorPackageType.fromString('three_months'),
+        AppActorPackageType.threeMonth,
+      );
+      expect(
+        AppActorPackageType.fromString('sixMonth'),
+        AppActorPackageType.sixMonth,
+      );
+      expect(
+        AppActorPackageType.fromString('six_months'),
+        AppActorPackageType.sixMonth,
+      );
     });
 
     test('fromString returns custom for invalid', () {
-      expect(AppActorPackageType.fromString('biweekly'), AppActorPackageType.custom);
+      expect(
+        AppActorPackageType.fromString('biweekly'),
+        AppActorPackageType.custom,
+      );
     });
 
     test('wireValue roundtrip', () {
@@ -556,14 +631,29 @@ void main() {
 
   group('AppActorProductType', () {
     test('fromString parses wire values', () {
-      expect(AppActorProductType.fromString('subscription'), AppActorProductType.subscription);
-      expect(AppActorProductType.fromString('non_consumable'), AppActorProductType.nonConsumable);
-      expect(AppActorProductType.fromString('consumable'), AppActorProductType.consumable);
-      expect(AppActorProductType.fromString('unknown'), AppActorProductType.unknown);
+      expect(
+        AppActorProductType.fromString('subscription'),
+        AppActorProductType.subscription,
+      );
+      expect(
+        AppActorProductType.fromString('non_consumable'),
+        AppActorProductType.nonConsumable,
+      );
+      expect(
+        AppActorProductType.fromString('consumable'),
+        AppActorProductType.consumable,
+      );
+      expect(
+        AppActorProductType.fromString('unknown'),
+        AppActorProductType.unknown,
+      );
     });
 
     test('fromString handles camelCase', () {
-      expect(AppActorProductType.fromString('nonConsumable'), AppActorProductType.nonConsumable);
+      expect(
+        AppActorProductType.fromString('nonConsumable'),
+        AppActorProductType.nonConsumable,
+      );
     });
 
     test('wireValue roundtrip', () {
@@ -575,9 +665,18 @@ void main() {
 
   group('AppActorOwnershipType', () {
     test('fromString parses wire values', () {
-      expect(AppActorOwnershipType.fromString('purchased'), AppActorOwnershipType.purchased);
-      expect(AppActorOwnershipType.fromString('family_shared'), AppActorOwnershipType.familyShared);
-      expect(AppActorOwnershipType.fromString('unknown'), AppActorOwnershipType.unknown);
+      expect(
+        AppActorOwnershipType.fromString('purchased'),
+        AppActorOwnershipType.purchased,
+      );
+      expect(
+        AppActorOwnershipType.fromString('family_shared'),
+        AppActorOwnershipType.familyShared,
+      );
+      expect(
+        AppActorOwnershipType.fromString('unknown'),
+        AppActorOwnershipType.unknown,
+      );
     });
 
     test('wireValue roundtrip', () {
@@ -589,14 +688,38 @@ void main() {
 
   group('AppActorPeriodType', () {
     test('fromString parses all wire values', () {
-      expect(AppActorPeriodType.fromString('weekly'), AppActorPeriodType.weekly);
-      expect(AppActorPeriodType.fromString('monthly'), AppActorPeriodType.monthly);
-      expect(AppActorPeriodType.fromString('two_month'), AppActorPeriodType.twoMonth);
-      expect(AppActorPeriodType.fromString('three_month'), AppActorPeriodType.threeMonth);
-      expect(AppActorPeriodType.fromString('six_month'), AppActorPeriodType.sixMonth);
-      expect(AppActorPeriodType.fromString('annual'), AppActorPeriodType.annual);
-      expect(AppActorPeriodType.fromString('lifetime'), AppActorPeriodType.lifetime);
-      expect(AppActorPeriodType.fromString('normal'), AppActorPeriodType.normal);
+      expect(
+        AppActorPeriodType.fromString('weekly'),
+        AppActorPeriodType.weekly,
+      );
+      expect(
+        AppActorPeriodType.fromString('monthly'),
+        AppActorPeriodType.monthly,
+      );
+      expect(
+        AppActorPeriodType.fromString('two_month'),
+        AppActorPeriodType.twoMonth,
+      );
+      expect(
+        AppActorPeriodType.fromString('three_month'),
+        AppActorPeriodType.threeMonth,
+      );
+      expect(
+        AppActorPeriodType.fromString('six_month'),
+        AppActorPeriodType.sixMonth,
+      );
+      expect(
+        AppActorPeriodType.fromString('annual'),
+        AppActorPeriodType.annual,
+      );
+      expect(
+        AppActorPeriodType.fromString('lifetime'),
+        AppActorPeriodType.lifetime,
+      );
+      expect(
+        AppActorPeriodType.fromString('normal'),
+        AppActorPeriodType.normal,
+      );
       expect(AppActorPeriodType.fromString('trial'), AppActorPeriodType.trial);
       expect(AppActorPeriodType.fromString('intro'), AppActorPeriodType.intro);
     });
@@ -610,12 +733,30 @@ void main() {
 
   group('AppActorSubscriptionStatus', () {
     test('fromString parses wire values', () {
-      expect(AppActorSubscriptionStatus.fromString('active'), AppActorSubscriptionStatus.active);
-      expect(AppActorSubscriptionStatus.fromString('grace_period'), AppActorSubscriptionStatus.gracePeriod);
-      expect(AppActorSubscriptionStatus.fromString('billing_retry'), AppActorSubscriptionStatus.billingRetry);
-      expect(AppActorSubscriptionStatus.fromString('expired'), AppActorSubscriptionStatus.expired);
-      expect(AppActorSubscriptionStatus.fromString('revoked'), AppActorSubscriptionStatus.revoked);
-      expect(AppActorSubscriptionStatus.fromString('upgraded'), AppActorSubscriptionStatus.upgraded);
+      expect(
+        AppActorSubscriptionStatus.fromString('active'),
+        AppActorSubscriptionStatus.active,
+      );
+      expect(
+        AppActorSubscriptionStatus.fromString('grace_period'),
+        AppActorSubscriptionStatus.gracePeriod,
+      );
+      expect(
+        AppActorSubscriptionStatus.fromString('billing_retry'),
+        AppActorSubscriptionStatus.billingRetry,
+      );
+      expect(
+        AppActorSubscriptionStatus.fromString('expired'),
+        AppActorSubscriptionStatus.expired,
+      );
+      expect(
+        AppActorSubscriptionStatus.fromString('revoked'),
+        AppActorSubscriptionStatus.revoked,
+      );
+      expect(
+        AppActorSubscriptionStatus.fromString('upgraded'),
+        AppActorSubscriptionStatus.upgraded,
+      );
     });
 
     test('wireValue roundtrip', () {
@@ -627,8 +768,14 @@ void main() {
 
   group('AppActorCancellationReason', () {
     test('fromString parses wire values', () {
-      expect(AppActorCancellationReason.fromString('customer_cancelled'), AppActorCancellationReason.customerCancelled);
-      expect(AppActorCancellationReason.fromString('developer_cancelled'), AppActorCancellationReason.developerCancelled);
+      expect(
+        AppActorCancellationReason.fromString('customer_cancelled'),
+        AppActorCancellationReason.customerCancelled,
+      );
+      expect(
+        AppActorCancellationReason.fromString('developer_cancelled'),
+        AppActorCancellationReason.developerCancelled,
+      );
     });
 
     test('wireValue roundtrip', () {
@@ -640,25 +787,58 @@ void main() {
 
   group('AppActorConfigValueType', () {
     test('fromString parses all values', () {
-      expect(AppActorConfigValueType.fromString('boolean'), AppActorConfigValueType.boolean);
-      expect(AppActorConfigValueType.fromString('number'), AppActorConfigValueType.number);
-      expect(AppActorConfigValueType.fromString('string'), AppActorConfigValueType.string);
-      expect(AppActorConfigValueType.fromString('json'), AppActorConfigValueType.json);
-      expect(AppActorConfigValueType.fromString('unknown'), AppActorConfigValueType.unknown);
+      expect(
+        AppActorConfigValueType.fromString('boolean'),
+        AppActorConfigValueType.boolean,
+      );
+      expect(
+        AppActorConfigValueType.fromString('number'),
+        AppActorConfigValueType.number,
+      );
+      expect(
+        AppActorConfigValueType.fromString('string'),
+        AppActorConfigValueType.string,
+      );
+      expect(
+        AppActorConfigValueType.fromString('json'),
+        AppActorConfigValueType.json,
+      );
+      expect(
+        AppActorConfigValueType.fromString('unknown'),
+        AppActorConfigValueType.unknown,
+      );
     });
 
     test('fromString returns unknown for invalid', () {
-      expect(AppActorConfigValueType.fromString('xml'), AppActorConfigValueType.unknown);
+      expect(
+        AppActorConfigValueType.fromString('xml'),
+        AppActorConfigValueType.unknown,
+      );
     });
   });
 
   group('AppActorSubscriptionReplacementMode', () {
     test('fromString parses wire values', () {
-      expect(AppActorSubscriptionReplacementMode.fromString('with_time_proration'), AppActorSubscriptionReplacementMode.withTimeProration);
-      expect(AppActorSubscriptionReplacementMode.fromString('charge_prorated'), AppActorSubscriptionReplacementMode.chargeProrated);
-      expect(AppActorSubscriptionReplacementMode.fromString('without_proration'), AppActorSubscriptionReplacementMode.withoutProration);
-      expect(AppActorSubscriptionReplacementMode.fromString('charge_full_price'), AppActorSubscriptionReplacementMode.chargeFullPrice);
-      expect(AppActorSubscriptionReplacementMode.fromString('deferred'), AppActorSubscriptionReplacementMode.deferred);
+      expect(
+        AppActorSubscriptionReplacementMode.fromString('with_time_proration'),
+        AppActorSubscriptionReplacementMode.withTimeProration,
+      );
+      expect(
+        AppActorSubscriptionReplacementMode.fromString('charge_prorated'),
+        AppActorSubscriptionReplacementMode.chargeProrated,
+      );
+      expect(
+        AppActorSubscriptionReplacementMode.fromString('without_proration'),
+        AppActorSubscriptionReplacementMode.withoutProration,
+      );
+      expect(
+        AppActorSubscriptionReplacementMode.fromString('charge_full_price'),
+        AppActorSubscriptionReplacementMode.chargeFullPrice,
+      );
+      expect(
+        AppActorSubscriptionReplacementMode.fromString('deferred'),
+        AppActorSubscriptionReplacementMode.deferred,
+      );
     });
 
     test('fromString returns null for unknown', () {
@@ -690,7 +870,10 @@ void main() {
       expect(info.ownershipType, AppActorOwnershipType.familyShared);
       expect(info.periodType, AppActorPeriodType.monthly);
       expect(info.subscriptionStatus, AppActorSubscriptionStatus.gracePeriod);
-      expect(info.cancellationReason, AppActorCancellationReason.customerCancelled);
+      expect(
+        info.cancellationReason,
+        AppActorCancellationReason.customerCancelled,
+      );
     });
 
     test('EntitlementInfo nullable enum fields', () {
@@ -717,36 +900,46 @@ void main() {
     test('Package fromJson parses cross-platform packageType', () {
       // Android sends snake_case
       final android = AppActorPackage.fromJson({
-        'id': 'p1', 'product_id': 'pid', 'package_type': 'two_month',
+        'id': 'p1',
+        'product_id': 'pid',
+        'package_type': 'two_month',
       });
       expect(android.packageType, AppActorPackageType.twoMonth);
 
       // iOS sends camelCase
       final ios = AppActorPackage.fromJson({
-        'id': 'p2', 'product_id': 'pid', 'package_type': 'twoMonth',
+        'id': 'p2',
+        'product_id': 'pid',
+        'package_type': 'twoMonth',
       });
       expect(ios.packageType, AppActorPackageType.twoMonth);
     });
 
     test('RemoteConfigItem valueType is typed enum', () {
       final item = AppActorRemoteConfigItem.fromJson({
-        'key': 'flag', 'value': true, 'value_type': 'boolean',
+        'key': 'flag',
+        'value': true,
+        'value_type': 'boolean',
       });
       expect(item.valueType, AppActorConfigValueType.boolean);
     });
 
     test('ExperimentAssignment valueType is typed enum', () {
       final exp = AppActorExperimentAssignment.fromJson({
-        'experiment_id': 'e1', 'experiment_key': 'ek',
-        'variant_id': 'v1', 'variant_key': 'vk',
-        'value_type': 'json', 'assigned_at': '2026-01-01',
+        'experiment_id': 'e1',
+        'experiment_key': 'ek',
+        'variant_id': 'v1',
+        'variant_key': 'vk',
+        'value_type': 'json',
+        'assigned_at': '2026-01-01',
       });
       expect(exp.valueType, AppActorConfigValueType.json);
     });
 
     test('PurchaseInfo store is typed enum', () {
       final info = AppActorPurchaseInfo.fromJson({
-        'store': 'app_store', 'product_id': 'pid',
+        'store': 'app_store',
+        'product_id': 'pid',
       });
       expect(info.store, AppActorStore.appStore);
     });
@@ -756,8 +949,16 @@ void main() {
         'id': 'default',
         'display_name': 'Default',
         'packages': [
-          {'id': 'p1', 'package_type': 'monthly', 'product_id': 'com.app.monthly'},
-          {'id': 'p2', 'package_type': 'annual', 'product_id': 'com.app.annual'},
+          {
+            'id': 'p1',
+            'package_type': 'monthly',
+            'product_id': 'com.app.monthly',
+          },
+          {
+            'id': 'p2',
+            'package_type': 'annual',
+            'product_id': 'com.app.annual',
+          },
           {'id': 'p3', 'package_type': 'six_month', 'product_id': 'com.app.6m'},
         ],
       });
@@ -832,12 +1033,18 @@ void main() {
 
     test('enriched error equality', () {
       final a = AppActorError.fromJson({
-        'code': 2007, 'message': 'msg',
-        'request_id': 'r1', 'scope': 'ip', 'retry_after_seconds': 10.0,
+        'code': 2007,
+        'message': 'msg',
+        'request_id': 'r1',
+        'scope': 'ip',
+        'retry_after_seconds': 10.0,
       });
       final b = AppActorError.fromJson({
-        'code': 2007, 'message': 'msg',
-        'request_id': 'r1', 'scope': 'ip', 'retry_after_seconds': 10.0,
+        'code': 2007,
+        'message': 'msg',
+        'request_id': 'r1',
+        'scope': 'ip',
+        'retry_after_seconds': 10.0,
       });
       expect(a, equals(b));
       expect(a.hashCode, b.hashCode);

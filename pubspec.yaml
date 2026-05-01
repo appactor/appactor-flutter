@@ -1,6 +1,6 @@
 name: appactor_flutter
 description: AppActor Flutter SDK — server-authoritative in-app purchase management for iOS and Android.
-version: 0.0.6
+version: 0.0.7
 homepage: https://github.com/appactor/appactor-flutter
 
 environment:
