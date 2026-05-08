@@ -1,3 +1,8 @@
+## 0.0.8
+
+- Updated native SDK dependencies to Android `0.1.1` and iOS `0.1.0`.
+- Removed stale ASA diagnostics pending-user-id fields that are no longer emitted by the native iOS SDK.
+
 ## 0.0.7
 
 - Updated the Android native dependency to `0.1.0`.

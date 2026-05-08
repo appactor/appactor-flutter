@@ -1050,4 +1050,22 @@ void main() {
       expect(a.hashCode, b.hashCode);
     });
   });
+
+  group('AppActorAsaDiagnostics', () {
+    test('parses native iOS diagnostics fields', () {
+      final diagnostics = AppActorAsaDiagnostics.fromJson({
+        'attribution_completed': true,
+        'pending_purchase_event_count': 2,
+        'debug_mode': true,
+        'auto_track_purchases': false,
+        'track_in_sandbox': true,
+      });
+
+      expect(diagnostics.attributionCompleted, true);
+      expect(diagnostics.pendingPurchaseEventCount, 2);
+      expect(diagnostics.debugMode, true);
+      expect(diagnostics.autoTrackPurchases, false);
+      expect(diagnostics.trackInSandbox, true);
+    });
+  });
 }

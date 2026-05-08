@@ -205,13 +205,6 @@ class ConfigTab extends StatelessWidget {
           InfoRow('Auto Track', asa.autoTrackPurchases ? 'Yes' : 'No'),
           InfoRow('Sandbox', asa.trackInSandbox ? 'Yes' : 'No'),
           InfoRow('Debug', asa.debugMode ? 'Yes' : 'No'),
-          if (asa.hasPendingUserIdChange) ...[
-            InfoRow('Pending UID Change', 'Yes'),
-            if (asa.pendingUserIdChange != null) ...[
-              InfoRow('  Old', asa.pendingUserIdChange!.oldUserId, mono: true),
-              InfoRow('  New', asa.pendingUserIdChange!.newUserId, mono: true),
-            ],
-          ],
         ],
       ],
     );
