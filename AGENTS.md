@@ -64,8 +64,8 @@ All models are `@immutable` with manual `fromJson()` factory constructors (no co
 
 ### Native Implementations
 
-- **iOS** (`ios/Classes/AppActorFlutterPlugin.swift`): Swift 5.9+, min iOS 15.0, delegates to `AppActorPlugin`, uses `AppActorPluginDelegate` protocol for events. Dependency declared via CocoaPods (`AppActorPlugin`, `0.1.0`), resolved from the iOS SDK git repo.
-- **Android** (`android/src/main/kotlin/.../AppActorFlutterPlugin.kt`): Kotlin 2.2.20, minSdk 24, compileSdk 36, JVM target Java 11. Implements `FlutterPlugin` + `ActivityAware`. Dependency: `com.appactor:appactor-plugin:0.1.1`, hosted on Maven Central — no additional authentication required.
+- **iOS** (`ios/Classes/AppActorFlutterPlugin.swift`): Swift 5.9+, min iOS 15.0, delegates to `AppActorPlugin`, uses `AppActorPluginDelegate` protocol for events. Dependency declared via CocoaPods (`AppActorPlugin`, `0.1.1`), resolved from the iOS SDK git repo.
+- **Android** (`android/src/main/kotlin/.../AppActorFlutterPlugin.kt`): Kotlin 2.2.20, minSdk 24, compileSdk 36, JVM target Java 11. Implements `FlutterPlugin` + `ActivityAware`. Dependency: `com.appactor:appactor-plugin:0.1.2`, hosted on Maven Central — no additional authentication required.
 
 ### Public API Export
 

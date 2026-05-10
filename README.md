@@ -21,7 +21,7 @@ AppActor handles in-app purchases, subscriptions, and entitlements so you can fo
 
 ```yaml
 dependencies:
-  appactor_flutter: ^0.0.8
+  appactor_flutter: ^0.0.9
 ```
 
 ## Quick Start
