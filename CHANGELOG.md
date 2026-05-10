@@ -1,3 +1,7 @@
+## 0.0.9
+
+- Updated native SDK dependencies to Android `0.1.2` and iOS `0.1.1` for source intent receipt classification support.
+
 ## 0.0.8
 
 - Updated native SDK dependencies to Android `0.1.1` and iOS `0.1.0`.
