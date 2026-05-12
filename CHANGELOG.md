@@ -1,3 +1,7 @@
+## 0.0.10
+
+- Updated native SDK dependencies to Android `0.1.3` and iOS `0.1.2` for queued transaction update source-intent parity.
+
 ## 0.0.9
 
 - Updated native SDK dependencies to Android `0.1.2` and iOS `0.1.1` for source intent receipt classification support.
