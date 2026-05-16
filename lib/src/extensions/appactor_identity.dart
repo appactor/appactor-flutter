@@ -1,5 +1,6 @@
 import '../appactor.dart';
 import '../appactor_platform.dart';
+import '../internal/attribution_helper_state.dart';
 import '../internal/method_names.dart';
 import '../models/customer_info.dart';
 
@@ -8,11 +9,13 @@ extension AppActorIdentity on AppActor {
     final result = await AppActorPlatform.execute(MethodNames.logIn, {
       'new_app_user_id': appUserId,
     });
+    resetAttributionHelperState();
     return AppActorCustomerInfo.fromJson(result);
   }
 
   Future<bool> logOut() async {
     final result = await AppActorPlatform.execute(MethodNames.logOut);
+    resetAttributionHelperState();
     return result['value'] == true;
   }
 

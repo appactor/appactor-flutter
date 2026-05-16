@@ -1,3 +1,9 @@
+## 0.0.11
+
+- Updated native SDK dependencies to Android `0.1.4` and iOS `0.1.3` for polished customer attributes, integration identifiers, attribution helpers, and typed date payload parity.
+- Added RevenueCat-style convenience helpers such as `setAppsflyerID`, `setAdjustID`, `setMediaSource`, and `setCampaign`.
+- Tightened Flutter attribute validation so nulls require `unsetAttribute`, mixed arrays are rejected, and date values use a typed envelope.
+
 ## 0.0.10
 
 - Updated native SDK dependencies to Android `0.1.3` and iOS `0.1.2` for queued transaction update source-intent parity.

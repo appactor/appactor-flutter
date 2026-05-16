@@ -21,7 +21,7 @@ AppActor handles in-app purchases, subscriptions, and entitlements so you can fo
 
 ```yaml
 dependencies:
-  appactor_flutter: ^0.0.10
+  appactor_flutter: ^0.0.11
 ```
 
 ## Quick Start
@@ -48,6 +48,26 @@ final result = await AppActor.instance.purchasePackage(
 // Check entitlements
 final info = await AppActor.instance.getCustomerInfo();
 final isPremium = info.hasActiveEntitlement('premium');
+```
+
+## Customer Attributes
+
+```dart
+await AppActor.instance.setAttributes({
+  'favorite_category': 'watch_faces',
+  'signup_source': const AppActorAttributeValue.string('spring_campaign'),
+});
+
+await AppActor.instance.setEmail('user@example.com');
+await AppActor.instance.setDisplayName('Ada Lovelace');
+await AppActor.instance.setIntegrationIdentifier(
+  AppActorIntegrationIdentifier.appsFlyerId,
+  'af-user-123',
+);
+await AppActor.instance.setAdjustID('adjust-user-123');
+
+await AppActor.instance.setMediaSource('facebook');
+await AppActor.instance.setCampaign('spring_sale');
 ```
 
 ## Purchase Sync
