@@ -100,10 +100,9 @@ extension AppActorAttributes on AppActor {
   );
 
   Future<void> updateAttribution(AppActorAttribution attribution) async {
-    await AppActorPlatform.execute(
-      MethodNames.updateAttribution,
-      attribution.toJson(),
-    );
+    final payload = attribution.toJson();
+    rememberCustomAttributionSnapshot(attribution);
+    await AppActorPlatform.execute(MethodNames.updateAttribution, payload);
   }
 
   Future<void> setMediaSource(String mediaSource) => updateAttribution(

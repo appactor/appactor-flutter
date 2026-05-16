@@ -323,6 +323,28 @@ void main() {
     },
   );
 
+  test('direct attribution update refreshes helper snapshot', () async {
+    await AppActor.instance.setMediaSource('facebook');
+    await AppActor.instance.updateAttribution(
+      const AppActorAttribution(
+        provider: AppActorAttributionProvider.custom,
+        providerName: 'tiktok',
+        network: 'tiktok',
+        source: 'tiktok',
+      ),
+    );
+    await AppActor.instance.setCampaign('spring_sale');
+
+    expect(executePayloadsFor('update_attribution').last, {
+      'provider': 'custom',
+      'provider_name': 'tiktok',
+      'network': 'tiktok',
+      'source': 'tiktok',
+      'campaign_name': 'spring_sale',
+      'campaign': 'spring_sale',
+    });
+  });
+
   test('attribution helper state resets across identity transitions', () async {
     await AppActor.instance.setMediaSource('facebook');
     await AppActor.instance.logIn('identified_user');

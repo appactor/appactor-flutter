@@ -34,6 +34,10 @@ AppActorAttribution mergeCustomAttributionPatch(AppActorAttribution patch) {
   return merged;
 }
 
+void rememberCustomAttributionSnapshot(AppActorAttribution attribution) {
+  _customAttributionSnapshot = attribution;
+}
+
 void resetAttributionHelperState() {
   _customAttributionSnapshot = null;
 }
