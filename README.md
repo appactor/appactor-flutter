@@ -50,6 +50,30 @@ final info = await AppActor.instance.getCustomerInfo();
 final isPremium = info.hasActiveEntitlement('premium');
 ```
 
+## Customer Attributes
+
+```dart
+await AppActor.instance.setAttributes({
+  'favorite_category': 'watch_faces',
+  'signup_source': const AppActorAttributeValue.string('spring_campaign'),
+});
+
+await AppActor.instance.setEmail('user@example.com');
+await AppActor.instance.setDisplayName('Ada Lovelace');
+await AppActor.instance.setIntegrationIdentifier(
+  AppActorIntegrationIdentifier.appsFlyerId,
+  'af-user-123',
+);
+
+await AppActor.instance.updateAttribution(
+  const AppActorAttribution(
+    provider: AppActorAttributionProvider.appleSearchAds,
+    status: AppActorAttributionStatus.nonOrganic,
+    campaignId: 'campaign-123',
+  ),
+);
+```
+
 ## Purchase Sync
 
 ```dart

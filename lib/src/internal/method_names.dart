@@ -38,4 +38,14 @@ abstract class MethodNames {
   static const canMakePurchases = 'can_make_purchases';
   static const getStorefront = 'get_storefront';
   static const getStoreCapabilities = 'get_store_capabilities';
+  static const setAttributes = 'set_attributes';
+  static const setAttribute = 'set_attribute';
+  static const unsetAttribute = 'unset_attribute';
+  static const setEmail = 'set_email';
+  static const setDisplayName = 'set_display_name';
+  static const setPhoneNumber = 'set_phone_number';
+  static const setPushToken = 'set_push_token';
+  static const collectDeviceIdentifiers = 'collect_device_identifiers';
+  static const setIntegrationIdentifier = 'set_integration_identifier';
+  static const updateAttribution = 'update_attribution';
 }
