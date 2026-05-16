@@ -1,6 +1,7 @@
 export 'src/appactor.dart';
 export 'src/models/appactor_error.dart';
 export 'src/models/appactor_options.dart';
+export 'src/models/attributes.dart';
 export 'src/models/enums.dart';
 export 'src/models/customer_info.dart';
 export 'src/models/offerings.dart';
@@ -18,5 +19,6 @@ export 'src/extensions/appactor_lifecycle.dart';
 export 'src/extensions/appactor_identity.dart';
 export 'src/extensions/appactor_purchase.dart';
 export 'src/extensions/appactor_data.dart';
+export 'src/extensions/appactor_attributes.dart';
 export 'src/extensions/appactor_config.dart';
 export 'src/extensions/appactor_ios.dart';
