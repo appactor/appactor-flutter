@@ -210,7 +210,7 @@ void main() {
   );
 
   test(
-    'attribution convenience helpers use custom provider and canonical fields',
+    'attribution convenience helpers delegate to native merge state',
     () async {
       await AppActor.instance.setMediaSource('facebook');
       await AppActor.instance.setCampaign('spring_sale');
@@ -220,79 +220,19 @@ void main() {
       await AppActor.instance.setCreative('video_1');
 
       expect(wireMethods(), [
-        'update_attribution',
-        'update_attribution',
-        'update_attribution',
-        'update_attribution',
-        'update_attribution',
-        'update_attribution',
+        'set_media_source',
+        'set_campaign',
+        'set_ad_group',
+        'set_ad',
+        'set_keyword',
+        'set_creative',
       ]);
-      expect(executePayloadsFor('update_attribution'), [
-        {
-          'provider': 'custom',
-          'provider_name': 'facebook',
-          'network': 'facebook',
-          'source': 'facebook',
-        },
-        {
-          'provider': 'custom',
-          'provider_name': 'facebook',
-          'network': 'facebook',
-          'source': 'facebook',
-          'campaign_name': 'spring_sale',
-          'campaign': 'spring_sale',
-        },
-        {
-          'provider': 'custom',
-          'provider_name': 'facebook',
-          'network': 'facebook',
-          'source': 'facebook',
-          'campaign_name': 'spring_sale',
-          'campaign': 'spring_sale',
-          'ad_group_name': 'lookalike_us',
-          'ad_group': 'lookalike_us',
-        },
-        {
-          'provider': 'custom',
-          'provider_name': 'facebook',
-          'network': 'facebook',
-          'source': 'facebook',
-          'campaign_name': 'spring_sale',
-          'campaign': 'spring_sale',
-          'ad_group_name': 'lookalike_us',
-          'ad_group': 'lookalike_us',
-          'ad_name': 'ad_1',
-          'ad': 'ad_1',
-        },
-        {
-          'provider': 'custom',
-          'provider_name': 'facebook',
-          'network': 'facebook',
-          'source': 'facebook',
-          'campaign_name': 'spring_sale',
-          'campaign': 'spring_sale',
-          'ad_group_name': 'lookalike_us',
-          'ad_group': 'lookalike_us',
-          'ad_name': 'ad_1',
-          'ad': 'ad_1',
-          'keyword': 'watch faces',
-        },
-        {
-          'provider': 'custom',
-          'provider_name': 'facebook',
-          'network': 'facebook',
-          'source': 'facebook',
-          'campaign_name': 'spring_sale',
-          'campaign': 'spring_sale',
-          'ad_group_name': 'lookalike_us',
-          'ad_group': 'lookalike_us',
-          'ad_name': 'ad_1',
-          'ad': 'ad_1',
-          'keyword': 'watch faces',
-          'creative_name': 'video_1',
-          'creative': 'video_1',
-        },
-      ]);
+      expect(executePayloadFor('set_media_source'), {'value': 'facebook'});
+      expect(executePayloadFor('set_campaign'), {'value': 'spring_sale'});
+      expect(executePayloadFor('set_ad_group'), {'value': 'lookalike_us'});
+      expect(executePayloadFor('set_ad'), {'value': 'ad_1'});
+      expect(executePayloadFor('set_keyword'), {'value': 'watch faces'});
+      expect(executePayloadFor('set_creative'), {'value': 'video_1'});
     },
   );
 
@@ -323,46 +263,39 @@ void main() {
     },
   );
 
-  test('direct attribution update refreshes helper snapshot', () async {
-    await AppActor.instance.setMediaSource('facebook');
-    await AppActor.instance.updateAttribution(
-      const AppActorAttribution(
-        provider: AppActorAttributionProvider.custom,
-        providerName: 'tiktok',
-        network: 'tiktok',
-        source: 'tiktok',
-      ),
-    );
-    await AppActor.instance.setCampaign('spring_sale');
+  test(
+    'direct attribution update stays separate from native helper calls',
+    () async {
+      await AppActor.instance.setMediaSource('facebook');
+      await AppActor.instance.updateAttribution(
+        const AppActorAttribution(
+          provider: AppActorAttributionProvider.custom,
+          providerName: 'tiktok',
+          network: 'tiktok',
+          source: 'tiktok',
+        ),
+      );
+      await AppActor.instance.setCampaign('spring_sale');
 
-    expect(executePayloadsFor('update_attribution').last, {
-      'provider': 'custom',
-      'provider_name': 'tiktok',
-      'network': 'tiktok',
-      'source': 'tiktok',
-      'campaign_name': 'spring_sale',
-      'campaign': 'spring_sale',
-    });
-  });
+      expect(executePayloadFor('update_attribution'), {
+        'provider': 'custom',
+        'provider_name': 'tiktok',
+        'network': 'tiktok',
+        'source': 'tiktok',
+      });
+      expect(executePayloadFor('set_media_source'), {'value': 'facebook'});
+      expect(executePayloadFor('set_campaign'), {'value': 'spring_sale'});
+    },
+  );
 
   test('attribution helper state resets across identity transitions', () async {
     await AppActor.instance.setMediaSource('facebook');
     await AppActor.instance.logIn('identified_user');
     await AppActor.instance.setCampaign('spring_sale');
 
-    expect(executePayloadsFor('update_attribution'), [
-      {
-        'provider': 'custom',
-        'provider_name': 'facebook',
-        'network': 'facebook',
-        'source': 'facebook',
-      },
-      {
-        'provider': 'custom',
-        'campaign_name': 'spring_sale',
-        'campaign': 'spring_sale',
-      },
-    ]);
+    expect(wireMethods(), ['set_media_source', 'log_in', 'set_campaign']);
+    expect(executePayloadFor('set_media_source'), {'value': 'facebook'});
+    expect(executePayloadFor('set_campaign'), {'value': 'spring_sale'});
   });
 
   test('attribution canonical fields and metadata keys validate', () async {

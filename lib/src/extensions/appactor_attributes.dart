@@ -105,65 +105,35 @@ extension AppActorAttributes on AppActor {
     await AppActorPlatform.execute(MethodNames.updateAttribution, payload);
   }
 
-  Future<void> setMediaSource(String mediaSource) => updateAttribution(
-    mergeCustomAttributionPatch(
-      AppActorAttribution(
-        provider: AppActorAttributionProvider.custom,
-        providerName: mediaSource,
-        network: mediaSource,
-        source: mediaSource,
-      ),
-    ),
-  );
+  Future<void> setMediaSource(String mediaSource) async {
+    await AppActorPlatform.execute(MethodNames.setMediaSource, {
+      'value': mediaSource,
+    });
+  }
 
-  Future<void> setCampaign(String campaign) => updateAttribution(
-    mergeCustomAttributionPatch(
-      AppActorAttribution(
-        provider: AppActorAttributionProvider.custom,
-        campaignName: campaign,
-        campaign: campaign,
-      ),
-    ),
-  );
+  Future<void> setCampaign(String campaign) async {
+    await AppActorPlatform.execute(MethodNames.setCampaign, {
+      'value': campaign,
+    });
+  }
 
-  Future<void> setAdGroup(String adGroup) => updateAttribution(
-    mergeCustomAttributionPatch(
-      AppActorAttribution(
-        provider: AppActorAttributionProvider.custom,
-        adGroupName: adGroup,
-        adGroup: adGroup,
-      ),
-    ),
-  );
+  Future<void> setAdGroup(String adGroup) async {
+    await AppActorPlatform.execute(MethodNames.setAdGroup, {'value': adGroup});
+  }
 
-  Future<void> setAd(String ad) => updateAttribution(
-    mergeCustomAttributionPatch(
-      AppActorAttribution(
-        provider: AppActorAttributionProvider.custom,
-        adName: ad,
-        ad: ad,
-      ),
-    ),
-  );
+  Future<void> setAd(String ad) async {
+    await AppActorPlatform.execute(MethodNames.setAd, {'value': ad});
+  }
 
-  Future<void> setKeyword(String keyword) => updateAttribution(
-    mergeCustomAttributionPatch(
-      AppActorAttribution(
-        provider: AppActorAttributionProvider.custom,
-        keyword: keyword,
-      ),
-    ),
-  );
+  Future<void> setKeyword(String keyword) async {
+    await AppActorPlatform.execute(MethodNames.setKeyword, {'value': keyword});
+  }
 
-  Future<void> setCreative(String creative) => updateAttribution(
-    mergeCustomAttributionPatch(
-      AppActorAttribution(
-        provider: AppActorAttributionProvider.custom,
-        creativeName: creative,
-        creative: creative,
-      ),
-    ),
-  );
+  Future<void> setCreative(String creative) async {
+    await AppActorPlatform.execute(MethodNames.setCreative, {
+      'value': creative,
+    });
+  }
 }
 
 void _validateCustomKey(String key) {

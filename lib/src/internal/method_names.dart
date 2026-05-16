@@ -48,4 +48,10 @@ abstract class MethodNames {
   static const collectDeviceIdentifiers = 'collect_device_identifiers';
   static const setIntegrationIdentifier = 'set_integration_identifier';
   static const updateAttribution = 'update_attribution';
+  static const setMediaSource = 'set_media_source';
+  static const setCampaign = 'set_campaign';
+  static const setAdGroup = 'set_ad_group';
+  static const setAd = 'set_ad';
+  static const setKeyword = 'set_keyword';
+  static const setCreative = 'set_creative';
 }
