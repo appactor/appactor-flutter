@@ -30,6 +30,17 @@ void main() {
     return jsonDecode(args['json'] as String) as Map<String, dynamic>;
   }
 
+  List<Map<String, dynamic>> executePayloadsFor(String method) {
+    return recordedCalls
+        .map((call) => Map<String, dynamic>.from(call.arguments as Map))
+        .where((entry) => entry['method'] == method)
+        .map(
+          (entry) =>
+              jsonDecode(entry['json'] as String) as Map<String, dynamic>,
+        )
+        .toList();
+  }
+
   setUp(() {
     recordedCalls.clear();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -52,6 +63,7 @@ void main() {
           'watch_faces',
           'widgets',
         ]),
+        'flags': const AppActorAttributeValue.boolList([true, false]),
         'last_seen': DateTime.utc(2026, 5, 16, 12),
       });
 
@@ -62,7 +74,11 @@ void main() {
           'age': 42,
           'trial': true,
           'categories': ['watch_faces', 'widgets'],
-          'last_seen': '2026-05-16T12:00:00.000Z',
+          'flags': [true, false],
+          'last_seen': {
+            'value': '2026-05-16T12:00:00.000Z',
+            'valueType': 'date',
+          },
         },
       });
     },
@@ -108,27 +124,39 @@ void main() {
       'push_token': 'push-token-123',
     });
     expect(executePayloadFor('collect_device_identifiers'), isEmpty);
+
+    expect(
+      AppActor.instance.setEmail('bad-email'),
+      throwsA(isA<ArgumentError>()),
+    );
+    expect(
+      AppActor.instance.setPhoneNumber('abc'),
+      throwsA(isA<ArgumentError>()),
+    );
   });
 
   test(
     'integration identifiers and attribution serialize wire values',
     () async {
-      await AppActor.instance.setIntegrationIdentifier(
-        AppActorIntegrationIdentifier.appsFlyerId,
-        'af-user-123',
-      );
+      await AppActor.instance.setAppsflyerID('af-user-123');
+      await AppActor.instance.setAdjustID('adj-user-123');
       await AppActor.instance.updateAttribution(
         AppActorAttribution(
           provider: AppActorAttributionProvider.appleSearchAds,
           status: AppActorAttributionStatus.nonOrganic,
           campaignId: 'campaign-1',
           adGroupId: 'adgroup-1',
+          network: 'apple_search_ads',
+          source: 'search',
+          campaign: 'spring',
+          adGroup: 'brand',
           attributedAt: DateTime.utc(2026, 5, 16, 13, 30),
           metadata: const {'source': 'flutter'},
         ),
       );
 
       expect(wireMethods(), [
+        'set_integration_identifier',
         'set_integration_identifier',
         'update_attribution',
       ]);
@@ -141,11 +169,107 @@ void main() {
         'status': 'non_organic',
         'campaign_id': 'campaign-1',
         'ad_group_id': 'adgroup-1',
+        'network': 'apple_search_ads',
+        'source': 'search',
+        'campaign': 'spring',
+        'ad_group': 'brand',
         'attributed_at': '2026-05-16T13:30:00.000Z',
         'metadata': {'source': 'flutter'},
       });
     },
   );
+
+  test(
+    'integration identifiers reject invalid values before native call',
+    () async {
+      expect(
+        AppActor.instance.setAppsflyerID(' padded'),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(
+        AppActor.instance.setAdjustID('x' * 1025),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(recordedCalls, isEmpty);
+    },
+  );
+
+  test(
+    'attribution convenience helpers use custom provider and canonical fields',
+    () async {
+      await AppActor.instance.setMediaSource('facebook');
+      await AppActor.instance.setCampaign('spring_sale');
+      await AppActor.instance.setAdGroup('lookalike_us');
+      await AppActor.instance.setAd('ad_1');
+      await AppActor.instance.setKeyword('watch faces');
+      await AppActor.instance.setCreative('video_1');
+
+      expect(wireMethods(), [
+        'update_attribution',
+        'update_attribution',
+        'update_attribution',
+        'update_attribution',
+        'update_attribution',
+        'update_attribution',
+      ]);
+      expect(executePayloadsFor('update_attribution'), [
+        {
+          'provider': 'custom',
+          'provider_name': 'facebook',
+          'network': 'facebook',
+          'source': 'facebook',
+        },
+        {
+          'provider': 'custom',
+          'campaign_name': 'spring_sale',
+          'campaign': 'spring_sale',
+        },
+        {
+          'provider': 'custom',
+          'ad_group_name': 'lookalike_us',
+          'ad_group': 'lookalike_us',
+        },
+        {'provider': 'custom', 'ad_name': 'ad_1', 'ad': 'ad_1'},
+        {'provider': 'custom', 'keyword': 'watch faces'},
+        {
+          'provider': 'custom',
+          'creative_name': 'video_1',
+          'creative': 'video_1',
+        },
+      ]);
+    },
+  );
+
+  test('attribution canonical fields and metadata keys validate', () async {
+    expect(
+      AppActor.instance.updateAttribution(
+        const AppActorAttribution(
+          provider: AppActorAttributionProvider.custom,
+          providerName: ' facebook',
+        ),
+      ),
+      throwsA(isA<ArgumentError>()),
+    );
+    expect(
+      AppActor.instance.updateAttribution(
+        AppActorAttribution(
+          provider: AppActorAttributionProvider.custom,
+          campaignName: 'x' * 1025,
+        ),
+      ),
+      throwsA(isA<ArgumentError>()),
+    );
+    expect(
+      AppActor.instance.updateAttribution(
+        const AppActorAttribution(
+          provider: AppActorAttributionProvider.custom,
+          metadata: {'appactor.private': 'x'},
+        ),
+      ),
+      throwsA(isA<ArgumentError>()),
+    );
+    expect(recordedCalls, isEmpty);
+  });
 
   test('custom attribute keys reject reserved prefixes', () async {
     expect(
@@ -166,6 +290,10 @@ void main() {
     );
     expect(
       AppActor.instance.setAttribute('x' * 65, 'x'),
+      throwsA(isA<ArgumentError>()),
+    );
+    expect(
+      AppActor.instance.setAttribute('bad key', 'x'),
       throwsA(isA<ArgumentError>()),
     );
   });

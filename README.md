@@ -21,7 +21,7 @@ AppActor handles in-app purchases, subscriptions, and entitlements so you can fo
 
 ```yaml
 dependencies:
-  appactor_flutter: ^0.0.10
+  appactor_flutter: ^0.0.11
 ```
 
 ## Quick Start
@@ -64,14 +64,10 @@ await AppActor.instance.setIntegrationIdentifier(
   AppActorIntegrationIdentifier.appsFlyerId,
   'af-user-123',
 );
+await AppActor.instance.setAdjustID('adjust-user-123');
 
-await AppActor.instance.updateAttribution(
-  const AppActorAttribution(
-    provider: AppActorAttributionProvider.appleSearchAds,
-    status: AppActorAttributionStatus.nonOrganic,
-    campaignId: 'campaign-123',
-  ),
-);
+await AppActor.instance.setMediaSource('facebook');
+await AppActor.instance.setCampaign('spring_sale');
 ```
 
 ## Purchase Sync

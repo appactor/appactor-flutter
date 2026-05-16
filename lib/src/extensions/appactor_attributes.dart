@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../appactor.dart';
 import '../appactor_platform.dart';
 import '../internal/method_names.dart';
@@ -24,6 +26,7 @@ extension AppActorAttributes on AppActor {
   }
 
   Future<void> setEmail(String? email) async {
+    if (email != null) _validateEmail(email);
     await AppActorPlatform.execute(MethodNames.setEmail, {'email': email});
   }
 
@@ -34,6 +37,7 @@ extension AppActorAttributes on AppActor {
   }
 
   Future<void> setPhoneNumber(String? phoneNumber) async {
+    if (phoneNumber != null) _validatePhoneNumber(phoneNumber);
     await AppActorPlatform.execute(MethodNames.setPhoneNumber, {
       'phone_number': phoneNumber,
     });
@@ -53,11 +57,41 @@ extension AppActorAttributes on AppActor {
     AppActorIntegrationIdentifier type,
     String value,
   ) async {
+    _validateIntegrationIdentifierValue(value);
     await AppActorPlatform.execute(MethodNames.setIntegrationIdentifier, {
       'type': type.wireValue,
       'value': value,
     });
   }
+
+  Future<void> setAppsflyerID(String appsflyerID) => setIntegrationIdentifier(
+    AppActorIntegrationIdentifier.appsFlyerId,
+    appsflyerID,
+  );
+
+  Future<void> setAppsFlyerID(String appsFlyerID) =>
+      setAppsflyerID(appsFlyerID);
+
+  Future<void> setAdjustID(String adjustID) => setIntegrationIdentifier(
+    AppActorIntegrationIdentifier.adjustId,
+    adjustID,
+  );
+
+  Future<void> setBranchID(String branchID) => setIntegrationIdentifier(
+    AppActorIntegrationIdentifier.branchId,
+    branchID,
+  );
+
+  Future<void> setFirebaseAppInstanceID(String firebaseAppInstanceID) =>
+      setIntegrationIdentifier(
+        AppActorIntegrationIdentifier.firebaseAppInstanceId,
+        firebaseAppInstanceID,
+      );
+
+  Future<void> setOneSignalID(String oneSignalID) => setIntegrationIdentifier(
+    AppActorIntegrationIdentifier.oneSignalPlayerId,
+    oneSignalID,
+  );
 
   Future<void> updateAttribution(AppActorAttribution attribution) async {
     await AppActorPlatform.execute(
@@ -65,6 +99,54 @@ extension AppActorAttributes on AppActor {
       attribution.toJson(),
     );
   }
+
+  Future<void> setMediaSource(String mediaSource) => updateAttribution(
+    AppActorAttribution(
+      provider: AppActorAttributionProvider.custom,
+      providerName: mediaSource,
+      network: mediaSource,
+      source: mediaSource,
+    ),
+  );
+
+  Future<void> setCampaign(String campaign) => updateAttribution(
+    AppActorAttribution(
+      provider: AppActorAttributionProvider.custom,
+      campaignName: campaign,
+      campaign: campaign,
+    ),
+  );
+
+  Future<void> setAdGroup(String adGroup) => updateAttribution(
+    AppActorAttribution(
+      provider: AppActorAttributionProvider.custom,
+      adGroupName: adGroup,
+      adGroup: adGroup,
+    ),
+  );
+
+  Future<void> setAd(String ad) => updateAttribution(
+    AppActorAttribution(
+      provider: AppActorAttributionProvider.custom,
+      adName: ad,
+      ad: ad,
+    ),
+  );
+
+  Future<void> setKeyword(String keyword) => updateAttribution(
+    AppActorAttribution(
+      provider: AppActorAttributionProvider.custom,
+      keyword: keyword,
+    ),
+  );
+
+  Future<void> setCreative(String creative) => updateAttribution(
+    AppActorAttribution(
+      provider: AppActorAttributionProvider.custom,
+      creativeName: creative,
+      creative: creative,
+    ),
+  );
 }
 
 void _validateCustomKey(String key) {
@@ -76,6 +158,13 @@ void _validateCustomKey(String key) {
       key,
       'key',
       'Attribute keys can contain at most 64 characters.',
+    );
+  }
+  if (!RegExp(r'^[A-Za-z0-9_.:-]+$').hasMatch(key)) {
+    throw ArgumentError.value(
+      key,
+      'key',
+      'Attribute keys may only contain letters, numbers, underscore, dot, colon, or dash.',
     );
   }
   if (key.startsWith(r'$')) {
@@ -90,6 +179,57 @@ void _validateCustomKey(String key) {
       key,
       'key',
       'Custom attribute keys cannot start with "appactor.".',
+    );
+  }
+}
+
+void _validateEmail(String email) {
+  if (email.trim() != email || email.isEmpty) {
+    throw ArgumentError.value(
+      email,
+      'email',
+      'Email must not be empty or padded with whitespace.',
+    );
+  }
+  if (utf8.encode(email).length > 320 ||
+      !RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+    throw ArgumentError.value(email, 'email', 'Email must be valid.');
+  }
+}
+
+void _validatePhoneNumber(String phoneNumber) {
+  if (phoneNumber.trim() != phoneNumber || phoneNumber.isEmpty) {
+    throw ArgumentError.value(
+      phoneNumber,
+      'phoneNumber',
+      'Phone number must not be empty or padded with whitespace.',
+    );
+  }
+  final digitCount = RegExp(r'\d').allMatches(phoneNumber).length;
+  if (utf8.encode(phoneNumber).length > 64 ||
+      digitCount < 3 ||
+      !RegExp(r'^[+0-9().\-\s]+$').hasMatch(phoneNumber)) {
+    throw ArgumentError.value(
+      phoneNumber,
+      'phoneNumber',
+      'Phone number must be valid.',
+    );
+  }
+}
+
+void _validateIntegrationIdentifierValue(String value) {
+  if (value.trim() != value || value.isEmpty) {
+    throw ArgumentError.value(
+      value,
+      'value',
+      'Integration identifier value must not be empty or padded with whitespace.',
+    );
+  }
+  if (utf8.encode(value).length > 1024) {
+    throw ArgumentError.value(
+      value,
+      'value',
+      'Integration identifier value must be at most 1024 bytes.',
     );
   }
 }
@@ -114,7 +254,9 @@ Object _normalizeAttributeValue(Object? value, {String name = 'value'}) {
     }
     return value;
   }
-  if (value is DateTime) return value.toUtc().toIso8601String();
+  if (value is DateTime) {
+    return {'value': value.toUtc().toIso8601String(), 'valueType': 'date'};
+  }
   if (value is Iterable) {
     final list = value.toList(growable: false);
     if (list.length > 20) {
@@ -128,17 +270,18 @@ Object _normalizeAttributeValue(Object? value, {String name = 'value'}) {
     if (list.every((item) => item is num && item.isFinite)) {
       return list.cast<num>();
     }
+    if (list.every((item) => item is bool)) return list.cast<bool>();
     throw ArgumentError.value(
       value,
       name,
-      'Attribute arrays must contain only strings or finite numbers.',
+      'Attribute arrays must contain only strings, finite numbers, or booleans.',
     );
   }
 
   throw ArgumentError.value(
     value,
     name,
-    'Expected a String, num, bool, DateTime, string/number array, or AppActorAttributeValue.',
+    'Expected a String, num, bool, DateTime, string/number/bool array, or AppActorAttributeValue.',
   );
 }
 
