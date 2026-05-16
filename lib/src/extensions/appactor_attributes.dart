@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../appactor.dart';
 import '../appactor_platform.dart';
+import '../internal/attribution_helper_state.dart';
 import '../internal/method_names.dart';
 import '../models/attributes.dart';
 
@@ -57,9 +58,14 @@ extension AppActorAttributes on AppActor {
     AppActorIntegrationIdentifier type,
     String value,
   ) async {
+    await setCustomIntegrationIdentifier(type.wireValue, value);
+  }
+
+  Future<void> setCustomIntegrationIdentifier(String type, String value) async {
+    _validateIntegrationIdentifierType(type);
     _validateIntegrationIdentifierValue(value);
     await AppActorPlatform.execute(MethodNames.setIntegrationIdentifier, {
-      'type': type.wireValue,
+      'type': type,
       'value': value,
     });
   }
@@ -101,50 +107,62 @@ extension AppActorAttributes on AppActor {
   }
 
   Future<void> setMediaSource(String mediaSource) => updateAttribution(
-    AppActorAttribution(
-      provider: AppActorAttributionProvider.custom,
-      providerName: mediaSource,
-      network: mediaSource,
-      source: mediaSource,
+    mergeCustomAttributionPatch(
+      AppActorAttribution(
+        provider: AppActorAttributionProvider.custom,
+        providerName: mediaSource,
+        network: mediaSource,
+        source: mediaSource,
+      ),
     ),
   );
 
   Future<void> setCampaign(String campaign) => updateAttribution(
-    AppActorAttribution(
-      provider: AppActorAttributionProvider.custom,
-      campaignName: campaign,
-      campaign: campaign,
+    mergeCustomAttributionPatch(
+      AppActorAttribution(
+        provider: AppActorAttributionProvider.custom,
+        campaignName: campaign,
+        campaign: campaign,
+      ),
     ),
   );
 
   Future<void> setAdGroup(String adGroup) => updateAttribution(
-    AppActorAttribution(
-      provider: AppActorAttributionProvider.custom,
-      adGroupName: adGroup,
-      adGroup: adGroup,
+    mergeCustomAttributionPatch(
+      AppActorAttribution(
+        provider: AppActorAttributionProvider.custom,
+        adGroupName: adGroup,
+        adGroup: adGroup,
+      ),
     ),
   );
 
   Future<void> setAd(String ad) => updateAttribution(
-    AppActorAttribution(
-      provider: AppActorAttributionProvider.custom,
-      adName: ad,
-      ad: ad,
+    mergeCustomAttributionPatch(
+      AppActorAttribution(
+        provider: AppActorAttributionProvider.custom,
+        adName: ad,
+        ad: ad,
+      ),
     ),
   );
 
   Future<void> setKeyword(String keyword) => updateAttribution(
-    AppActorAttribution(
-      provider: AppActorAttributionProvider.custom,
-      keyword: keyword,
+    mergeCustomAttributionPatch(
+      AppActorAttribution(
+        provider: AppActorAttributionProvider.custom,
+        keyword: keyword,
+      ),
     ),
   );
 
   Future<void> setCreative(String creative) => updateAttribution(
-    AppActorAttribution(
-      provider: AppActorAttributionProvider.custom,
-      creativeName: creative,
-      creative: creative,
+    mergeCustomAttributionPatch(
+      AppActorAttribution(
+        provider: AppActorAttributionProvider.custom,
+        creativeName: creative,
+        creative: creative,
+      ),
     ),
   );
 }
@@ -230,6 +248,44 @@ void _validateIntegrationIdentifierValue(String value) {
       value,
       'value',
       'Integration identifier value must be at most 1024 bytes.',
+    );
+  }
+}
+
+void _validateIntegrationIdentifierType(String value) {
+  if (value.trim() != value || value.isEmpty) {
+    throw ArgumentError.value(
+      value,
+      'type',
+      'Integration identifier type must not be empty or padded with whitespace.',
+    );
+  }
+  if (value.length > 64) {
+    throw ArgumentError.value(
+      value,
+      'type',
+      'Integration identifier type can contain at most 64 characters.',
+    );
+  }
+  if (!RegExp(r'^[A-Za-z0-9_.:-]+$').hasMatch(value)) {
+    throw ArgumentError.value(
+      value,
+      'type',
+      'Integration identifier type may only contain letters, numbers, underscore, dot, colon, or dash.',
+    );
+  }
+  if (value.startsWith(r'$')) {
+    throw ArgumentError.value(
+      value,
+      'type',
+      'Integration identifier type cannot start with "\$".',
+    );
+  }
+  if (value.toLowerCase().startsWith('appactor.')) {
+    throw ArgumentError.value(
+      value,
+      'type',
+      'Integration identifier type cannot start with "appactor.".',
     );
   }
 }

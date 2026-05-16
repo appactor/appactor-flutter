@@ -133,6 +133,7 @@ enum AppActorAttributionStatus {
 @immutable
 class AppActorAttribution {
   final AppActorAttributionProvider provider;
+  final String? providerOverride;
   final AppActorAttributionStatus? status;
   final String? providerName;
   final String? campaignId;
@@ -158,6 +159,7 @@ class AppActorAttribution {
 
   const AppActorAttribution({
     required this.provider,
+    this.providerOverride,
     this.status,
     this.providerName,
     this.campaignId,
@@ -182,7 +184,61 @@ class AppActorAttribution {
     this.metadata = const {},
   });
 
+  factory AppActorAttribution.customProvider(
+    String provider, {
+    AppActorAttributionStatus? status,
+    String? providerName,
+    String? campaignId,
+    String? campaignName,
+    String? adGroupId,
+    String? adGroupName,
+    String? adId,
+    String? adName,
+    String? creativeId,
+    String? creativeName,
+    String? keywordId,
+    String? keyword,
+    String? network,
+    String? source,
+    String? medium,
+    String? campaign,
+    String? adGroup,
+    String? ad,
+    String? creative,
+    String? clickId,
+    DateTime? attributedAt,
+    Map<String, Object> metadata = const {},
+  }) {
+    return AppActorAttribution(
+      provider: AppActorAttributionProvider.custom,
+      providerOverride: provider,
+      status: status,
+      providerName: providerName,
+      campaignId: campaignId,
+      campaignName: campaignName,
+      adGroupId: adGroupId,
+      adGroupName: adGroupName,
+      adId: adId,
+      adName: adName,
+      creativeId: creativeId,
+      creativeName: creativeName,
+      keywordId: keywordId,
+      keyword: keyword,
+      network: network,
+      source: source,
+      medium: medium,
+      campaign: campaign,
+      adGroup: adGroup,
+      ad: ad,
+      creative: creative,
+      clickId: clickId,
+      attributedAt: attributedAt,
+      metadata: metadata,
+    );
+  }
+
   Map<String, dynamic> toJson() {
+    _validateAttributionProvider(providerOverride);
     _validateAttributionString('provider_name', providerName);
     _validateAttributionString('campaign_id', campaignId);
     _validateAttributionString('campaign_name', campaignName);
@@ -203,7 +259,7 @@ class AppActorAttribution {
     _validateAttributionString('creative', creative);
     _validateAttributionString('click_id', clickId);
     return {
-      'provider': provider.wireValue,
+      'provider': providerOverride ?? provider.wireValue,
       if (status != null) 'status': status!.wireValue,
       if (providerName != null) 'provider_name': providerName,
       if (campaignId != null) 'campaign_id': campaignId,
@@ -286,6 +342,24 @@ void _validateAttributionString(String field, String? value) {
       value,
       field,
       'Attribution field "$field" must be at most 1024 bytes.',
+    );
+  }
+}
+
+void _validateAttributionProvider(String? value) {
+  if (value == null) return;
+  if (value.trim() != value || value.isEmpty) {
+    throw ArgumentError.value(
+      value,
+      'provider',
+      'Attribution provider must not be empty or padded with whitespace.',
+    );
+  }
+  if (utf8.encode(value).length > 64) {
+    throw ArgumentError.value(
+      value,
+      'provider',
+      'Attribution provider must be at most 64 bytes.',
     );
   }
 }

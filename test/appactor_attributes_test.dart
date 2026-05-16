@@ -13,6 +13,19 @@ void main() {
   Future<dynamic> handleCall(MethodCall call) async {
     recordedCalls.add(call);
     if (call.method != 'execute') return null;
+
+    final args = Map<String, dynamic>.from(call.arguments as Map);
+    final method = args['method'] as String;
+    if (method == 'log_in') {
+      return jsonEncode({
+        'success': {'app_user_id': 'identified_user'},
+      });
+    }
+    if (method == 'log_out') {
+      return jsonEncode({
+        'success': {'value': true},
+      });
+    }
     return jsonEncode({'success': null});
   }
 
@@ -41,10 +54,12 @@ void main() {
         .toList();
   }
 
-  setUp(() {
+  setUp(() async {
     recordedCalls.clear();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, handleCall);
+    await AppActor.instance.reset();
+    recordedCalls.clear();
   });
 
   tearDown(() {
@@ -221,24 +236,112 @@ void main() {
         },
         {
           'provider': 'custom',
+          'provider_name': 'facebook',
+          'network': 'facebook',
+          'source': 'facebook',
           'campaign_name': 'spring_sale',
           'campaign': 'spring_sale',
         },
         {
           'provider': 'custom',
+          'provider_name': 'facebook',
+          'network': 'facebook',
+          'source': 'facebook',
+          'campaign_name': 'spring_sale',
+          'campaign': 'spring_sale',
           'ad_group_name': 'lookalike_us',
           'ad_group': 'lookalike_us',
         },
-        {'provider': 'custom', 'ad_name': 'ad_1', 'ad': 'ad_1'},
-        {'provider': 'custom', 'keyword': 'watch faces'},
         {
           'provider': 'custom',
+          'provider_name': 'facebook',
+          'network': 'facebook',
+          'source': 'facebook',
+          'campaign_name': 'spring_sale',
+          'campaign': 'spring_sale',
+          'ad_group_name': 'lookalike_us',
+          'ad_group': 'lookalike_us',
+          'ad_name': 'ad_1',
+          'ad': 'ad_1',
+        },
+        {
+          'provider': 'custom',
+          'provider_name': 'facebook',
+          'network': 'facebook',
+          'source': 'facebook',
+          'campaign_name': 'spring_sale',
+          'campaign': 'spring_sale',
+          'ad_group_name': 'lookalike_us',
+          'ad_group': 'lookalike_us',
+          'ad_name': 'ad_1',
+          'ad': 'ad_1',
+          'keyword': 'watch faces',
+        },
+        {
+          'provider': 'custom',
+          'provider_name': 'facebook',
+          'network': 'facebook',
+          'source': 'facebook',
+          'campaign_name': 'spring_sale',
+          'campaign': 'spring_sale',
+          'ad_group_name': 'lookalike_us',
+          'ad_group': 'lookalike_us',
+          'ad_name': 'ad_1',
+          'ad': 'ad_1',
+          'keyword': 'watch faces',
           'creative_name': 'video_1',
           'creative': 'video_1',
         },
       ]);
     },
   );
+
+  test(
+    'custom integration identifiers and attribution providers are supported',
+    () async {
+      await AppActor.instance.setCustomIntegrationIdentifier(
+        'kochava_device_id',
+        'device-123',
+      );
+      await AppActor.instance.updateAttribution(
+        AppActorAttribution.customProvider(
+          'singular',
+          campaignName: 'spring_sale',
+          campaign: 'spring_sale',
+        ),
+      );
+
+      expect(executePayloadFor('set_integration_identifier'), {
+        'type': 'kochava_device_id',
+        'value': 'device-123',
+      });
+      expect(executePayloadFor('update_attribution'), {
+        'provider': 'singular',
+        'campaign_name': 'spring_sale',
+        'campaign': 'spring_sale',
+      });
+    },
+  );
+
+  test('attribution helper state resets across identity transitions', () async {
+    await AppActor.instance.setMediaSource('facebook');
+    await AppActor.instance.logIn('identified_user');
+    await AppActor.instance.setCampaign('spring_sale');
+
+    expect(executePayloadsFor('update_attribution'), [
+      {
+        'provider': 'custom',
+        'provider_name': 'facebook',
+        'network': 'facebook',
+        'source': 'facebook',
+      },
+      {
+        'provider': 'custom',
+        'campaign_name': 'spring_sale',
+        'campaign': 'spring_sale',
+      },
+    ]);
+  });
 
   test('attribution canonical fields and metadata keys validate', () async {
     expect(

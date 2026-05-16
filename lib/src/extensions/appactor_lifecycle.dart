@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart'
 
 import '../appactor.dart';
 import '../appactor_platform.dart';
+import '../internal/attribution_helper_state.dart';
 import '../internal/method_names.dart';
 import '../models/appactor_options.dart';
 import '../sdk_version.dart';
@@ -58,6 +59,7 @@ extension AppActorLifecycle on AppActor {
   Future<void> reset() async {
     await AppActorPlatform.execute(MethodNames.reset);
     AppActorPlatform.resetState();
+    resetAttributionHelperState();
     _searchAdsOptions = null;
   }
 
