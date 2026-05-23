@@ -54,14 +54,14 @@ extension AppActorPurchase on AppActor {
     return AppActorCustomerInfo.fromJson(result);
   }
 
-  /// Mirrors the current native `sync_purchases` semantics:
-  /// drains the receipt queue and refreshes customer info.
+  /// Quietly syncs store purchases to the backend without draining the
+  /// local receipt queue.
   Future<AppActorCustomerInfo> syncPurchases() async {
     final result = await AppActorPlatform.execute(MethodNames.syncPurchases);
     return AppActorCustomerInfo.fromJson(result);
   }
 
-  /// Runs a lightweight/native quiet sync without draining the receipt queue.
+  /// Deprecated alias for [syncPurchases].
   Future<AppActorCustomerInfo> quietSyncPurchases() async {
     final result = await AppActorPlatform.execute(
       MethodNames.quietSyncPurchases,
