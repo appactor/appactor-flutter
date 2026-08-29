@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.24
+
+- Added: `AppActorOffering.offeringKey` (the dashboard lookup key), `AppActorOfferings.getOffering(offeringKey)` / `offerings['key']` / `allOfferings` (current first), and `AppActor.instance.getOffering(offeringKey)` to fetch and look up in one call.
+- Added: `AppActor.instance.getExperiment(key)` returns an `AppActorExperiment` that is never null — `isEnrolled`, `variantKey`, `isVariant(key)`, `boolValue / stringValue / intValue / doubleValue(defaultValue:)`, and `experiment['key']` for JSON payloads. `getExperimentAssignment` is unchanged underneath.
+- Removed: `AppActorOfferings.offeringByLookupKey` — use `getOffering(offeringKey)` (a one-line rename).
+- Updated the iOS native dependency to `AppActorPlugin 0.1.13`: the launch sweep now posts every unfinished StoreKit transaction and finishes each after the server accepts it, so older renewals no longer accumulate in `Transaction.unfinished`; unverified unfinished transactions are finished immediately. The native SDKs also gained the same offerings/experiments API.
+- Updated the Android native dependency to `com.appactor:appactor-plugin:2.3.15` (same offerings/experiments API on the native side).
+
 ## 0.0.23
 
 - Updated the Android native dependency to `com.appactor:appactor-plugin:2.3.14`: Google Play subscription purchases that do not name an explicit offer now auto-apply the best eligible offer Play returns for the base plan (longest free trial, else cheapest introductory price, else the base plan) — matching RevenueCat / Adapty. The native SDK also now exposes the resolved offer's pricing phases so trial/intro pricing can be surfaced. iOS is unaffected.
