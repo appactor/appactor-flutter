@@ -54,6 +54,26 @@ final info = await AppActor.instance.getCustomerInfo();
 final isPremium = info.hasActiveEntitlement('premium');
 ```
 
+## Offerings & Experiments
+
+```dart
+// All offerings, or one by its offering key (the dashboard "lookup key")
+final offerings = await AppActor.instance.getOfferings();
+offerings.current;                          // the current offering
+offerings.allOfferings;                     // List<AppActorOffering>, current first
+offerings['onboarding'];                    // by offeringKey
+final onboarding = await AppActor.instance.getOffering('onboarding'); // fetch + lookup in one call
+
+// Experiments — never null, so no null-checks
+final paywall = await AppActor.instance.getExperiment('paywall_test');
+if (paywall.isVariant('annual_first')) showAnnualFirst();
+paywall.variantKey;                         // 'control', 'annual_first', … or null when not enrolled
+
+final showOnboarding = (await AppActor.instance.getExperiment('has_onboard'))
+    .boolValue(defaultValue: true);
+final title = (await AppActor.instance.getExperiment('onboarding_flow'))['title'] as String? ?? 'Welcome';
+```
+
 ## Customer Attributes
 
 ```dart

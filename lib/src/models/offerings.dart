@@ -18,14 +18,32 @@ class AppActorOfferings {
     this.verification = AppActorVerificationResult.notRequested,
   });
 
+  /// Every offering as a list: the current one first, then by
+  /// [AppActorOffering.offeringKey].
+  List<AppActorOffering> get allOfferings {
+    return all.values.toList()..sort((a, b) {
+      if (a.isCurrent != b.isCurrent) return a.isCurrent ? -1 : 1;
+      return a.offeringKey.compareTo(b.offeringKey);
+    });
+  }
+
   AppActorOffering? offering(String id) => all[id];
 
-  AppActorOffering? offeringByLookupKey(String lookupKey) {
+  /// Returns the offering with the given [AppActorOffering.offeringKey], or
+  /// `null`.
+  ///
+  /// ```dart
+  /// final onboarding = offerings.getOffering('onboarding');
+  /// ```
+  AppActorOffering? getOffering(String offeringKey) {
     for (final offering in all.values) {
-      if (offering.lookupKey == lookupKey) return offering;
+      if (offering.offeringKey == offeringKey) return offering;
     }
     return null;
   }
+
+  /// `offerings['onboarding']` — same as [getOffering].
+  AppActorOffering? operator [](String offeringKey) => getOffering(offeringKey);
 
   factory AppActorOfferings.fromJson(Map<String, dynamic> json) {
     final allMap = <String, AppActorOffering>{};
@@ -96,6 +114,11 @@ class AppActorOffering {
     this.metadata,
     this.packages = const [],
   });
+
+  /// The developer-defined key of this offering — the "lookup key" in the
+  /// dashboard, e.g. `'onboarding'`. Falls back to [id] when the offering has
+  /// no key.
+  String get offeringKey => lookupKey ?? id;
 
   AppActorPackage? package(String id) {
     for (final p in packages) {
