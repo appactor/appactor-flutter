@@ -1,2 +1,2 @@
 /// Must match the version in pubspec.yaml.
-const String appActorSdkVersion = '0.0.24';
+const String appActorSdkVersion = '0.1.0';

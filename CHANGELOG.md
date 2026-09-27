@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.0
+
+- Changed, breaking: the minimum is iOS 16 and Android minSdk 26 (Android 8.0), as the native SDKs now require. An app with a lower floor fails to build with this version until it raises its own.
+- Updated the iOS native dependency to `AppActorPlugin 0.2.1` and the Android native dependency to `com.appactor:appactor-plugin:2.4.2`. They carry the 2026-09-26 audit fixes and the 2026-09-27 re-audit fixes. They check signed responses against the app's API key, so a proxy that swaps in another project's key can't unlock premium.
+- Changed: some native error codes are more precise, and the Dart constants for them already exist:
+  - a purchase whose receipt is queued for retry: 2012;
+  - a second concurrent purchase: 2013;
+  - a restore signature failure: 2015.
+- Changed: on Android, `onCustomerInfoUpdated` no longer emits unchanged info. The first emission after an identity change still comes.
+
 ## 0.0.24
 
 - Added: `AppActorOffering.offeringKey` (the dashboard lookup key), `AppActorOfferings.getOffering(offeringKey)` / `offerings['key']` / `allOfferings` (current first), and `AppActor.instance.getOffering(offeringKey)` to fetch and look up in one call.

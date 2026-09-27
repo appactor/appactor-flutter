@@ -10,8 +10,8 @@
 
 <p align="center">
 <a href="https://github.com/appactor/appactor-flutter/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
-<img src="https://img.shields.io/badge/iOS-15.1%2B-blue.svg">
-<img src="https://img.shields.io/badge/Android-24%2B-green.svg">
+<img src="https://img.shields.io/badge/iOS-16%2B-blue.svg">
+<img src="https://img.shields.io/badge/Android-26%2B-green.svg">
 <a href="https://pub.dev/packages/appactor_flutter"><img src="https://img.shields.io/badge/pub.dev-compatible-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@ AppActor handles in-app purchases, subscriptions, and entitlements so you can fo
 
 ```yaml
 dependencies:
-  appactor_flutter: ^0.0.17
+  appactor_flutter: ^0.1.0
 ```
 
 ## Quick Start
