@@ -1,6 +1,6 @@
 source 'https://cdn.cocoapods.org/'
 
-platform :ios, '15.1'
+platform :ios, '16.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -35,8 +35,8 @@ target 'Runner' do
     pod 'AppActor', :path => '../../../appactor-ios'
     pod 'AppActorPlugin', :path => '../../../appactor-ios'
   else
-    pod 'AppActor', :git => 'https://github.com/appactor/appactor-ios.git', :tag => '0.1.9'
-    pod 'AppActorPlugin', :git => 'https://github.com/appactor/appactor-ios.git', :tag => '0.1.9'
+    pod 'AppActor', :git => 'https://github.com/appactor/appactor-ios.git', :tag => '0.2.1'
+    pod 'AppActorPlugin', :git => 'https://github.com/appactor/appactor-ios.git', :tag => '0.2.1'
   end
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
