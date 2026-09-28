@@ -15,6 +15,7 @@ import org.mockito.Mockito
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -29,30 +30,70 @@ internal class AppActorFlutterPluginTest {
 
     @AfterTest
     fun tearDown() {
+        attached.toList().forEach { detach(it.first) }
         Dispatchers.resetMain()
+    }
+
+    private val attached = mutableListOf<Pair<AppActorFlutterPlugin, FlutterPlugin.FlutterPluginBinding>>()
+
+    private fun attach(messenger: BinaryMessenger): AppActorFlutterPlugin {
+        val binding = Mockito.mock(FlutterPlugin.FlutterPluginBinding::class.java)
+        Mockito.`when`(binding.binaryMessenger).thenReturn(messenger)
+        Mockito.`when`(binding.applicationContext).thenReturn(Mockito.mock(Context::class.java))
+        return AppActorFlutterPlugin().also {
+            it.onAttachedToEngine(binding)
+            attached += it to binding
+        }
+    }
+
+    private fun callAppActor(plugin: AppActorFlutterPlugin) {
+        plugin.onMethodCall(
+            MethodCall("execute", mapOf("method" to "get_sdk_version", "json" to "{}")),
+            Mockito.mock(MethodChannel.Result::class.java),
+        )
+    }
+
+    private fun BinaryMessenger.eventsSent(): Int = Mockito.mockingDetails(this).invocations
+        .count { it.method.name == "send" && it.arguments[0] == "appactor_flutter" }
+
+    @Test
+    fun events_reachEveryEngineThatUsesAppActor_andOnlyThose() {
+        val appMessenger = Mockito.mock(BinaryMessenger::class.java)
+        val secondMessenger = Mockito.mock(BinaryMessenger::class.java)
+        val idleMessenger = Mockito.mock(BinaryMessenger::class.java)
+        val app = attach(appMessenger)
+        val second = attach(secondMessenger)
+        attach(idleMessenger)
+        callAppActor(app)
+        callAppActor(second)
+
+        AppActorFlutterPlugin.deliver("customer_info_updated", "{}")
+
+        assertEquals(1, appMessenger.eventsSent())
+        assertEquals(1, secondMessenger.eventsSent())
+        assertEquals(0, idleMessenger.eventsSent())
     }
 
     @Test
     fun secondEngine_detaching_keepsEventsForTheFirst() {
-        val app = AppActorFlutterPlugin()
-        val background = AppActorFlutterPlugin()
-        val appBinding = pluginBinding()
-        val backgroundBinding = pluginBinding()
+        val appMessenger = Mockito.mock(BinaryMessenger::class.java)
+        val app = attach(appMessenger)
+        val second = attach(Mockito.mock(BinaryMessenger::class.java))
+        callAppActor(app)
 
-        app.onAttachedToEngine(appBinding)
-        background.onAttachedToEngine(backgroundBinding)
-        background.onDetachedFromEngine(backgroundBinding)
+        detach(second)
         assertNotNull(AppActorPlugin.eventListener)
+        AppActorFlutterPlugin.deliver("customer_info_updated", "{}")
+        assertEquals(1, appMessenger.eventsSent())
 
-        app.onDetachedFromEngine(appBinding)
+        detach(app)
         assertNull(AppActorPlugin.eventListener)
     }
 
-    private fun pluginBinding(): FlutterPlugin.FlutterPluginBinding {
-        val binding = Mockito.mock(FlutterPlugin.FlutterPluginBinding::class.java)
-        Mockito.`when`(binding.binaryMessenger).thenReturn(Mockito.mock(BinaryMessenger::class.java))
-        Mockito.`when`(binding.applicationContext).thenReturn(Mockito.mock(Context::class.java))
-        return binding
+    private fun detach(plugin: AppActorFlutterPlugin) {
+        val entry = attached.first { it.first === plugin }
+        attached.remove(entry)
+        plugin.onDetachedFromEngine(entry.second)
     }
 
     @Test

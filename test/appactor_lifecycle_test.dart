@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:appactor_flutter/appactor_flutter.dart';
+import 'package:appactor_flutter/src/appactor_platform.dart';
 import 'package:appactor_flutter/src/sdk_version.dart';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, debugDefaultTargetPlatformOverride;
@@ -76,6 +77,7 @@ void main() {
   });
 
   tearDown(() async {
+    AppActorPlatform.now = DateTime.now;
     debugDefaultTargetPlatformOverride = null;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, null);
@@ -222,6 +224,40 @@ void main() {
     await pumpEventQueue();
     expect(late, isEmpty);
     await lateSubscription.cancel();
+  });
+
+  test('a listener that stops after one intent leaves the rest for the next', () async {
+    await AppActor.instance.configure('pk_test_123');
+    for (final id in ['intent_1', 'intent_2']) {
+      await emitNativeEvent('purchase_intent_received', {
+        'intent_id': id,
+        'product_id': 'pro_monthly',
+      });
+    }
+
+    final first = await AppActor.instance.onPurchaseIntent.first;
+    final second = await AppActor.instance.onPurchaseIntent.first;
+
+    expect([first.intentId, second.intentId], ['intent_1', 'intent_2']);
+  });
+
+  test('a purchase intent the native side has forgotten is not delivered', () async {
+    var now = DateTime(2026, 9, 28, 12);
+    AppActorPlatform.now = () => now;
+    await AppActor.instance.configure('pk_test_123');
+    await emitNativeEvent('purchase_intent_received', {
+      'intent_id': 'stale',
+      'product_id': 'pro_monthly',
+    });
+    now = now.add(const Duration(minutes: 6));
+    await emitNativeEvent('purchase_intent_received', {
+      'intent_id': 'fresh',
+      'product_id': 'pro_monthly',
+    });
+
+    final intent = await AppActor.instance.onPurchaseIntent.first;
+
+    expect(intent.intentId, 'fresh');
   });
 
   test('reset drops purchase intents no one received', () async {

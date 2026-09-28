@@ -12,9 +12,12 @@ class AppActorPlatform {
       StreamController<Map<String, dynamic>>.broadcast();
   static final _receiptEventController =
       StreamController<Map<String, dynamic>>.broadcast();
+  // Sync, so delivery stops the moment a listener cancels (`.first`): whatever
+  // it hasn't been handed stays in `_pendingPurchaseIntents` for the next one.
   static final _purchaseIntentController =
       StreamController<Map<String, dynamic>>.broadcast(
-    onListen: _flushPendingPurchaseIntents,
+    sync: true,
+    onListen: () => scheduleMicrotask(_deliverPendingPurchaseIntents),
   );
   static final _deferredPurchaseController =
       StreamController<Map<String, dynamic>>.broadcast();
@@ -30,10 +33,15 @@ class AppActorPlatform {
 
   // The App Store hands an intent over once, and a broadcast stream drops events
   // no one listens to: an app that subscribes only on its paywall would lose the
-  // intent a promoted purchase launched it with. They wait for the first listener.
-  // Capped like the native store, which also forgets them after 5 minutes.
-  static final _pendingPurchaseIntents = <Map<String, dynamic>>[];
+  // intent a promoted purchase launched it with. They wait for a listener, under
+  // the native store's limits: 10 of them, each good for 5 minutes.
+  static final _pendingPurchaseIntents =
+      <({DateTime receivedAt, Map<String, dynamic> json})>[];
   static const _maxPendingPurchaseIntents = 10;
+  static const _purchaseIntentTtl = Duration(minutes: 5);
+
+  @visibleForTesting
+  static DateTime Function() now = DateTime.now;
 
   static bool _initialized = false;
 
@@ -48,10 +56,22 @@ class AppActorPlatform {
     _pendingPurchaseIntents.clear();
   }
 
-  static void _flushPendingPurchaseIntents() {
-    final pending = List.of(_pendingPurchaseIntents);
-    _pendingPurchaseIntents.clear();
-    pending.forEach(_purchaseIntentController.add);
+  static void _holdPurchaseIntent(Map<String, dynamic> json) {
+    if (_pendingPurchaseIntents.length == _maxPendingPurchaseIntents) {
+      _pendingPurchaseIntents.removeAt(0);
+    }
+    _pendingPurchaseIntents.add((receivedAt: now(), json: json));
+    _deliverPendingPurchaseIntents();
+  }
+
+  static void _deliverPendingPurchaseIntents() {
+    while (_pendingPurchaseIntents.isNotEmpty &&
+        _purchaseIntentController.hasListener) {
+      final intent = _pendingPurchaseIntents.removeAt(0);
+      if (now().difference(intent.receivedAt) < _purchaseIntentTtl) {
+        _purchaseIntentController.add(intent.json);
+      }
+    }
   }
 
   static Future<dynamic> _handleNativeEvent(MethodCall call) async {
@@ -76,14 +96,7 @@ class AppActorPlatform {
         case 'receipt_pipeline_event':
           _receiptEventController.add(data);
         case 'purchase_intent_received':
-          if (_purchaseIntentController.hasListener) {
-            _purchaseIntentController.add(data);
-          } else {
-            if (_pendingPurchaseIntents.length == _maxPendingPurchaseIntents) {
-              _pendingPurchaseIntents.removeAt(0);
-            }
-            _pendingPurchaseIntents.add(data);
-          }
+          _holdPurchaseIntent(data);
         case 'deferred_purchase_resolved':
           _deferredPurchaseController.add(data);
       }

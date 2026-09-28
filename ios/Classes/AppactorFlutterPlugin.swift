@@ -4,13 +4,19 @@ import AppActorPlugin
 public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
     // The native SDK has one delegate per process, but an app can run several engines:
     // flutter_local_notifications starts a background one for notification actions, which
-    // registers every plugin again. Each event goes to every attached engine, so a second
-    // engine can't take the events away from the app's own. Only touched on the main thread.
+    // registers every plugin again. Each event goes to every engine that uses AppActor, so
+    // a second engine can't take the events away from the app's own. Only touched on the
+    // main thread.
     private static var attached: [AppActorFlutterPlugin] = []
     // The SDK holds its delegate weakly.
     private static let eventRelay = EventRelay()
 
     private let channel: FlutterMethodChannel
+
+    // Set by the engine's first call. An engine whose Dart side never talks to AppActor
+    // gets no events: they would only pile up in its channel buffer, and a message to an
+    // engine that isn't running yet asserts.
+    private var receivesEvents = false
 
     private init(channel: FlutterMethodChannel) {
         self.channel = channel
@@ -38,6 +44,7 @@ public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
             result(FlutterMethodNotImplemented)
             return
         }
+        receivesEvents = true
         let json = args["json"] as? String ?? "{}"
         AppActorPlugin.shared.execute(method: method, withJsonString: json) { response in
             DispatchQueue.main.async {
@@ -47,6 +54,15 @@ public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
     }
 
     public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
+        // The engine calls this from its dealloc, on whichever thread drops the last reference.
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { self.detach() }
+            return
+        }
+        detach()
+    }
+
+    private func detach() {
         Self.attached.removeAll { $0 === self }
         guard Self.attached.isEmpty else { return }
         MainActor.assumeIsolated {
@@ -62,8 +78,8 @@ public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
             withJson jsonString: String
         ) {
             DispatchQueue.main.async {
-                for plugin in AppActorFlutterPlugin.attached {
-                    plugin.channel.invokeMethod("event", arguments: ["name": eventName, "json": jsonString])
+                for engine in AppActorFlutterPlugin.attached where engine.receivesEvents {
+                    engine.channel.invokeMethod("event", arguments: ["name": eventName, "json": jsonString])
                 }
             }
         }

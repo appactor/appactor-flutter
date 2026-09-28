@@ -54,6 +54,10 @@ Native-to-Dart events flow through `MethodChannel` handler to broadcast `StreamC
 
 Malformed events are silently dropped to prevent isolate crashes.
 
+An app can run several Flutter engines (firebase_messaging's background handler on Android and flutter_local_notifications' background actions on iOS start one), but the native SDK has one event listener per process. Both native bridges therefore keep a list of attached engines and send each event to every engine whose Dart side has called `execute` at least once; the listener starts with the first engine and stops when the last one detaches. Do not go back to one static channel: a second engine would take the events away from the app's own. An engine that never calls AppActor gets no events, because they would only pile up in its channel buffer, and on iOS a message to an engine that isn't running yet asserts.
+
+`purchase_intent_received` events wait in `AppActorPlatform._pendingPurchaseIntents` (up to 10, each good for 5 minutes like the native `PurchaseIntentStore`) until a listener is there, and `reset()` clears them. The controller is sync so a listener that cancels (`.first`) leaves the rest for the next one.
+
 ### configure() and Hot Restart
 
 `configure()` is idempotent: it checks `isConfigured()` before proceeding and calls `AppActorPlatform.ensureInitialized()` to re-register the method call handler. This is critical for Flutter hot restart, where the Dart VM restarts but native state persists — the event listener must be re-registered. `reset()` clears both native state and the Dart-side `_searchAdsTrackingEnabled` flag.
