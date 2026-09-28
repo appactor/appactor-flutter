@@ -15,10 +15,12 @@ void main() {
   const channel = MethodChannel('appactor_flutter');
   final recordedCalls = <MethodCall>[];
   var failAsaEnable = false;
+  var listenCalls = 0;
 
   Future<dynamic> handleCall(MethodCall call) async {
-    recordedCalls.add(call);
+    if (call.method == 'listen') listenCalls++;
     if (call.method != 'execute') return null;
+    recordedCalls.add(call);
 
     final args = Map<String, dynamic>.from(call.arguments as Map);
     final method = args['method'] as String;
@@ -68,6 +70,7 @@ void main() {
 
   setUp(() async {
     recordedCalls.clear();
+    listenCalls = 0;
     failAsaEnable = false;
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -197,6 +200,12 @@ void main() {
     },
   );
 
+  test('the handler is registered with native so it sends events here', () async {
+    await AppActor.instance.configure('pk_test_123');
+
+    expect(listenCalls, 1);
+  });
+
   test('a purchase intent with no listener waits for the first one', () async {
     await AppActor.instance.configure('pk_test_123');
     await emitNativeEvent('purchase_intent_received', {
@@ -239,6 +248,25 @@ void main() {
     final second = await AppActor.instance.onPurchaseIntent.first;
 
     expect([first.intentId, second.intentId], ['intent_1', 'intent_2']);
+  });
+
+  test('at most 10 purchase intents are held, the oldest go first', () async {
+    await AppActor.instance.configure('pk_test_123');
+    for (var i = 1; i <= 11; i++) {
+      await emitNativeEvent('purchase_intent_received', {
+        'intent_id': 'intent_$i',
+        'product_id': 'pro_monthly',
+      });
+    }
+
+    final intents = <String>[];
+    final subscription = AppActor.instance.onPurchaseIntent.listen(
+      (intent) => intents.add(intent.intentId),
+    );
+    await pumpEventQueue();
+    await subscription.cancel();
+
+    expect(intents, [for (var i = 2; i <= 11; i++) 'intent_$i']);
   });
 
   test('a purchase intent the native side has forgotten is not delivered', () async {

@@ -46,26 +46,23 @@ internal class AppActorFlutterPluginTest {
         }
     }
 
-    private fun callAppActor(plugin: AppActorFlutterPlugin) {
-        plugin.onMethodCall(
-            MethodCall("execute", mapOf("method" to "get_sdk_version", "json" to "{}")),
-            Mockito.mock(MethodChannel.Result::class.java),
-        )
+    private fun listen(plugin: AppActorFlutterPlugin) {
+        plugin.onMethodCall(MethodCall("listen", null), Mockito.mock(MethodChannel.Result::class.java))
     }
 
     private fun BinaryMessenger.eventsSent(): Int = Mockito.mockingDetails(this).invocations
         .count { it.method.name == "send" && it.arguments[0] == "appactor_flutter" }
 
     @Test
-    fun events_reachEveryEngineThatUsesAppActor_andOnlyThose() {
+    fun events_reachEveryEngineThatListens_andOnlyThose() {
         val appMessenger = Mockito.mock(BinaryMessenger::class.java)
         val secondMessenger = Mockito.mock(BinaryMessenger::class.java)
         val idleMessenger = Mockito.mock(BinaryMessenger::class.java)
         val app = attach(appMessenger)
         val second = attach(secondMessenger)
         attach(idleMessenger)
-        callAppActor(app)
-        callAppActor(second)
+        listen(app)
+        listen(second)
 
         AppActorFlutterPlugin.deliver("customer_info_updated", "{}")
 
@@ -79,7 +76,7 @@ internal class AppActorFlutterPluginTest {
         val appMessenger = Mockito.mock(BinaryMessenger::class.java)
         val app = attach(appMessenger)
         val second = attach(Mockito.mock(BinaryMessenger::class.java))
-        callAppActor(app)
+        listen(app)
 
         detach(second)
         assertNotNull(AppActorPlugin.eventListener)

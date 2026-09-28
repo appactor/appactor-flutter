@@ -11,20 +11,18 @@ public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
     // The SDK holds its delegate weakly.
     private static let eventRelay = EventRelay()
 
-    private let channel: FlutterMethodChannel
+    private var channel: FlutterMethodChannel?
 
-    // Set by the engine's first call. An engine whose Dart side never talks to AppActor
-    // gets no events: they would only pile up in its channel buffer, and a message to an
-    // engine that isn't running yet asserts.
+    // Set when the engine's Dart side registers its handler ("listen"). An engine that
+    // never uses AppActor, such as a background isolate, gets no events: they would only
+    // pile up in its channel buffer, and a message to an engine that isn't running yet
+    // asserts.
     private var receivesEvents = false
-
-    private init(channel: FlutterMethodChannel) {
-        self.channel = channel
-    }
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "appactor_flutter", binaryMessenger: registrar.messenger())
-        let instance = AppActorFlutterPlugin(channel: channel)
+        let instance = AppActorFlutterPlugin()
+        instance.channel = channel
         registrar.addMethodCallDelegate(instance, channel: channel)
         // The engine calls detachFromEngine(for:) only on published objects.
         registrar.publish(instance)
@@ -38,13 +36,17 @@ public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if call.method == "listen" {
+            receivesEvents = true
+            result(nil)
+            return
+        }
         guard call.method == "execute",
               let args = call.arguments as? [String: Any],
               let method = args["method"] as? String else {
             result(FlutterMethodNotImplemented)
             return
         }
-        receivesEvents = true
         let json = args["json"] as? String ?? "{}"
         AppActorPlugin.shared.execute(method: method, withJsonString: json) { response in
             DispatchQueue.main.async {
@@ -79,7 +81,7 @@ public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
         ) {
             DispatchQueue.main.async {
                 for engine in AppActorFlutterPlugin.attached where engine.receivesEvents {
-                    engine.channel.invokeMethod("event", arguments: ["name": eventName, "json": jsonString])
+                    engine.channel?.invokeMethod("event", arguments: ["name": eventName, "json": jsonString])
                 }
             }
         }

@@ -13,9 +13,10 @@ import com.appactor.plugin.events.PluginEventListener
 class AppActorFlutterPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware {
     private var channel: MethodChannel? = null
 
-    // Set by the engine's first call. An engine whose Dart side never talks to AppActor
-    // (firebase_messaging's background isolate, say) gets no events: they would only
-    // pile up in its channel buffer, and log a warning for each one in debug builds.
+    // Set when the engine's Dart side registers its handler ("listen"). An engine that
+    // never uses AppActor (firebase_messaging's background isolate, say) gets no events:
+    // they would only pile up in its channel buffer, and log a warning for each one in
+    // debug builds.
     private var receivesEvents = false
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -42,8 +43,11 @@ class AppActorFlutterPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Ac
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
-            "execute" -> {
+            "listen" -> {
                 receivesEvents = true
+                result.success(null)
+            }
+            "execute" -> {
                 val method = call.argument<String>("method")
                     ?: return result.error("MISSING_METHOD", "method argument is required", null)
                 val json = call.argument<String>("json") ?: "{}"

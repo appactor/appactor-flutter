@@ -12,8 +12,10 @@ class AppActorPlatform {
       StreamController<Map<String, dynamic>>.broadcast();
   static final _receiptEventController =
       StreamController<Map<String, dynamic>>.broadcast();
-  // Sync, so delivery stops the moment a listener cancels (`.first`): whatever
-  // it hasn't been handed stays in `_pendingPurchaseIntents` for the next one.
+  // Sync, so delivery stops the moment a listener cancels from its callback
+  // (`.first`, `take`): whatever it hasn't been handed stays in
+  // `_pendingPurchaseIntents` for the next one. A listener that pauses instead
+  // (`await for` with `break`) has the ones queued behind the first discarded.
   static final _purchaseIntentController =
       StreamController<Map<String, dynamic>>.broadcast(
     sync: true,
@@ -49,6 +51,9 @@ class AppActorPlatform {
     if (_initialized) return;
     _initialized = true;
     _channel.setMethodCallHandler(_handleNativeEvent);
+    // Native sends events only to engines that ask, so a background isolate that
+    // never uses AppActor doesn't get them.
+    unawaited(_channel.invokeMethod<void>('listen').catchError((_) {}));
   }
 
   static void resetState() {
