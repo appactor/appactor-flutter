@@ -16,6 +16,7 @@ class AppActorPlatform {
   // (`.first`, `take`): whatever it hasn't been handed stays in
   // `_pendingPurchaseIntents` for the next one. A listener that pauses instead
   // (`await for` with `break`) has the ones queued behind the first discarded.
+  // The microtask: `listen` hasn't returned the subscription yet in `onListen`.
   static final _purchaseIntentController =
       StreamController<Map<String, dynamic>>.broadcast(
     sync: true,
@@ -35,8 +36,8 @@ class AppActorPlatform {
 
   // The App Store hands an intent over once, and a broadcast stream drops events
   // no one listens to: an app that subscribes only on its paywall would lose the
-  // intent a promoted purchase launched it with. They wait for a listener, under
-  // the native store's limits: 10 of them, each good for 5 minutes.
+  // intent a promoted purchase launched it with. They wait for a listener, capped
+  // and expired like the native `PurchaseIntentStore`.
   static final _pendingPurchaseIntents =
       <({DateTime receivedAt, Map<String, dynamic> json})>[];
   static const _maxPendingPurchaseIntents = 10;
@@ -51,8 +52,7 @@ class AppActorPlatform {
     if (_initialized) return;
     _initialized = true;
     _channel.setMethodCallHandler(_handleNativeEvent);
-    // Native sends events only to engines that ask, so a background isolate that
-    // never uses AppActor doesn't get them.
+    // Native sends events only to engines that ask.
     unawaited(_channel.invokeMethod<void>('listen').catchError((_) {}));
   }
 

@@ -2,21 +2,16 @@ import Flutter
 import AppActorPlugin
 
 public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
-    // The native SDK has one delegate per process, but an app can run several engines:
-    // flutter_local_notifications starts a background one for notification actions, which
-    // registers every plugin again. Each event goes to every engine that uses AppActor, so
-    // a second engine can't take the events away from the app's own. Only touched on the
-    // main thread.
-    private static var attached: [AppActorFlutterPlugin] = []
+    // The SDK has one delegate per process; flutter_local_notifications' background actions
+    // start a second engine that registers this plugin again. Main thread only.
+    private static var engines: [AppActorFlutterPlugin] = []
     // The SDK holds its delegate weakly.
     private static let eventRelay = EventRelay()
 
     private var channel: FlutterMethodChannel?
 
-    // Set when the engine's Dart side registers its handler ("listen"). An engine that
-    // never uses AppActor, such as a background isolate, gets no events: they would only
-    // pile up in its channel buffer, and a message to an engine that isn't running yet
-    // asserts.
+    // An engine that never uses AppActor gets no events: they would pile up in its channel
+    // buffer, and a message to an engine that isn't running yet asserts.
     private var receivesEvents = false
 
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -26,8 +21,8 @@ public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
         registrar.addMethodCallDelegate(instance, channel: channel)
         // The engine calls detachFromEngine(for:) only on published objects.
         registrar.publish(instance)
-        attached.append(instance)
-        if attached.count == 1 {
+        engines.append(instance)
+        if engines.count == 1 {
             AppActorPlugin.shared.delegate = eventRelay
             MainActor.assumeIsolated {
                 AppActorPlugin.shared.startEventListening()
@@ -36,22 +31,24 @@ public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        if call.method == "listen" {
+        switch call.method {
+        case "listen":
             receivesEvents = true
             result(nil)
-            return
-        }
-        guard call.method == "execute",
-              let args = call.arguments as? [String: Any],
-              let method = args["method"] as? String else {
-            result(FlutterMethodNotImplemented)
-            return
-        }
-        let json = args["json"] as? String ?? "{}"
-        AppActorPlugin.shared.execute(method: method, withJsonString: json) { response in
-            DispatchQueue.main.async {
-                result(response)
+        case "execute":
+            guard let args = call.arguments as? [String: Any],
+                  let method = args["method"] as? String else {
+                result(FlutterMethodNotImplemented)
+                return
             }
+            let json = args["json"] as? String ?? "{}"
+            AppActorPlugin.shared.execute(method: method, withJsonString: json) { response in
+                DispatchQueue.main.async {
+                    result(response)
+                }
+            }
+        default:
+            result(FlutterMethodNotImplemented)
         }
     }
 
@@ -65,12 +62,19 @@ public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
     }
 
     private func detach() {
-        Self.attached.removeAll { $0 === self }
-        guard Self.attached.isEmpty else { return }
+        Self.engines.removeAll { $0 === self }
+        guard Self.engines.isEmpty else { return }
         MainActor.assumeIsolated {
             AppActorPlugin.shared.stopEventListening()
         }
         AppActorPlugin.shared.delegate = nil
+    }
+
+    private static func deliver(_ name: String, _ json: String) {
+        let event = ["name": name, "json": json]
+        for engine in engines where engine.receivesEvents {
+            engine.channel?.invokeMethod("event", arguments: event)
+        }
     }
 
     private final class EventRelay: NSObject, AppActorPluginDelegate {
@@ -80,9 +84,7 @@ public class AppActorFlutterPlugin: NSObject, FlutterPlugin {
             withJson jsonString: String
         ) {
             DispatchQueue.main.async {
-                for engine in AppActorFlutterPlugin.attached where engine.receivesEvents {
-                    engine.channel?.invokeMethod("event", arguments: ["name": eventName, "json": jsonString])
-                }
+                AppActorFlutterPlugin.deliver(eventName, jsonString)
             }
         }
     }

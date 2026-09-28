@@ -13,16 +13,14 @@ import com.appactor.plugin.events.PluginEventListener
 class AppActorFlutterPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware {
     private var channel: MethodChannel? = null
 
-    // Set when the engine's Dart side registers its handler ("listen"). An engine that
-    // never uses AppActor (firebase_messaging's background isolate, say) gets no events:
-    // they would only pile up in its channel buffer, and log a warning for each one in
-    // debug builds.
+    // An engine that never uses AppActor (firebase_messaging's background isolate) gets no
+    // events: they would pile up in its channel buffer and log a warning each in debug.
     private var receivesEvents = false
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        val channel = MethodChannel(binding.binaryMessenger, "appactor_flutter")
-        channel.setMethodCallHandler(this)
-        this.channel = channel
+        channel = MethodChannel(binding.binaryMessenger, "appactor_flutter").also {
+            it.setMethodCallHandler(this)
+        }
         AppActorPlugin.setContext(binding.applicationContext)
         engines.add(this)
         if (engines.size == 1) {
@@ -33,7 +31,6 @@ class AppActorFlutterPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Ac
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel?.setMethodCallHandler(null)
-        channel = null
         engines.remove(this)
         if (engines.isEmpty()) {
             AppActorPlugin.stopEventListening()
@@ -78,11 +75,8 @@ class AppActorFlutterPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Ac
     companion object {
         private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
 
-        // The native SDK has one event listener per process, but an app can run several
-        // engines: firebase_messaging's background handler starts a second one, which
-        // registers every plugin again. Each event goes to every engine that uses AppActor,
-        // so a second engine can't take the events away from the app's own. Only touched
-        // on the main thread: engines attach and detach there, and events are posted to it.
+        // The SDK has one event listener per process; firebase_messaging's background
+        // handler starts a second engine that registers this plugin again. Main thread only.
         private val engines = mutableListOf<AppActorFlutterPlugin>()
 
         private val eventListener = PluginEventListener { name: String, json: String ->

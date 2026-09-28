@@ -23,6 +23,8 @@ import kotlin.test.assertNull
 internal class AppActorFlutterPluginTest {
     private val mainDispatcher = StandardTestDispatcher()
 
+    private val attached = mutableListOf<AppActorFlutterPlugin>()
+
     @BeforeTest
     fun setUp() {
         Dispatchers.setMain(mainDispatcher)
@@ -30,20 +32,25 @@ internal class AppActorFlutterPluginTest {
 
     @AfterTest
     fun tearDown() {
-        attached.toList().forEach { detach(it.first) }
+        attached.toList().forEach(::detach)
         Dispatchers.resetMain()
     }
 
-    private val attached = mutableListOf<Pair<AppActorFlutterPlugin, FlutterPlugin.FlutterPluginBinding>>()
-
-    private fun attach(messenger: BinaryMessenger): AppActorFlutterPlugin {
+    private fun attach(
+        messenger: BinaryMessenger = Mockito.mock(BinaryMessenger::class.java),
+    ): AppActorFlutterPlugin {
         val binding = Mockito.mock(FlutterPlugin.FlutterPluginBinding::class.java)
         Mockito.`when`(binding.binaryMessenger).thenReturn(messenger)
         Mockito.`when`(binding.applicationContext).thenReturn(Mockito.mock(Context::class.java))
         return AppActorFlutterPlugin().also {
             it.onAttachedToEngine(binding)
-            attached += it to binding
+            attached += it
         }
+    }
+
+    private fun detach(plugin: AppActorFlutterPlugin) {
+        attached.remove(plugin)
+        plugin.onDetachedFromEngine(Mockito.mock(FlutterPlugin.FlutterPluginBinding::class.java))
     }
 
     private fun listen(plugin: AppActorFlutterPlugin) {
@@ -58,11 +65,9 @@ internal class AppActorFlutterPluginTest {
         val appMessenger = Mockito.mock(BinaryMessenger::class.java)
         val secondMessenger = Mockito.mock(BinaryMessenger::class.java)
         val idleMessenger = Mockito.mock(BinaryMessenger::class.java)
-        val app = attach(appMessenger)
-        val second = attach(secondMessenger)
+        listen(attach(appMessenger))
+        listen(attach(secondMessenger))
         attach(idleMessenger)
-        listen(app)
-        listen(second)
 
         AppActorFlutterPlugin.deliver("customer_info_updated", "{}")
 
@@ -75,7 +80,7 @@ internal class AppActorFlutterPluginTest {
     fun secondEngine_detaching_keepsEventsForTheFirst() {
         val appMessenger = Mockito.mock(BinaryMessenger::class.java)
         val app = attach(appMessenger)
-        val second = attach(Mockito.mock(BinaryMessenger::class.java))
+        val second = attach()
         listen(app)
 
         detach(second)
@@ -85,12 +90,6 @@ internal class AppActorFlutterPluginTest {
 
         detach(app)
         assertNull(AppActorPlugin.eventListener)
-    }
-
-    private fun detach(plugin: AppActorFlutterPlugin) {
-        val entry = attached.first { it.first === plugin }
-        attached.remove(entry)
-        plugin.onDetachedFromEngine(entry.second)
     }
 
     @Test

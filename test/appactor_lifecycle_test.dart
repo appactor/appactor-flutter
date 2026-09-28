@@ -68,6 +68,22 @@ void main() {
     await completion.future;
   }
 
+  Future<void> emitIntent(String id) => emitNativeEvent(
+        'purchase_intent_received',
+        {'intent_id': id, 'product_id': 'pro_monthly'},
+      );
+
+  // Listens for a turn and returns the ids of the purchase intents it was handed.
+  Future<List<String>> drainIntentIds() async {
+    final ids = <String>[];
+    final subscription = AppActor.instance.onPurchaseIntent.listen(
+      (intent) => ids.add(intent.intentId),
+    );
+    await pumpEventQueue();
+    await subscription.cancel();
+    return ids;
+  }
+
   setUp(() async {
     recordedCalls.clear();
     listenCalls = 0;
@@ -206,101 +222,61 @@ void main() {
     expect(listenCalls, 1);
   });
 
-  test('a purchase intent with no listener waits for the first one', () async {
-    await AppActor.instance.configure('pk_test_123');
-    await emitNativeEvent('purchase_intent_received', {
-      'intent_id': 'intent_1',
-      'product_id': 'pro_monthly',
+  group('held purchase intents', () {
+    setUp(() => AppActor.instance.configure('pk_test_123'));
+
+    test('one with no listener waits for the first one', () async {
+      await emitIntent('intent_1');
+
+      final ids = <String>[];
+      final subscription = AppActor.instance.onPurchaseIntent.listen(
+        (intent) => ids.add(intent.intentId),
+      );
+      await pumpEventQueue();
+      expect(ids, ['intent_1']);
+
+      await emitIntent('intent_2');
+      await pumpEventQueue();
+      expect(ids, ['intent_1', 'intent_2']);
+      await subscription.cancel();
+
+      expect(await drainIntentIds(), isEmpty);
     });
 
-    final intents = <AppActorPurchaseIntent>[];
-    final subscription = AppActor.instance.onPurchaseIntent.listen(intents.add);
-    await pumpEventQueue();
-    expect(intents.map((intent) => intent.intentId), ['intent_1']);
+    test('a listener that stops after one leaves the rest for the next', () async {
+      await emitIntent('intent_1');
+      await emitIntent('intent_2');
 
-    await emitNativeEvent('purchase_intent_received', {
-      'intent_id': 'intent_2',
-      'product_id': 'pro_monthly',
-    });
-    await pumpEventQueue();
-    expect(intents.map((intent) => intent.intentId), ['intent_1', 'intent_2']);
-    await subscription.cancel();
+      final first = await AppActor.instance.onPurchaseIntent.first;
+      final second = await AppActor.instance.onPurchaseIntent.first;
 
-    final late = <AppActorPurchaseIntent>[];
-    final lateSubscription = AppActor.instance.onPurchaseIntent.listen(
-      late.add,
-    );
-    await pumpEventQueue();
-    expect(late, isEmpty);
-    await lateSubscription.cancel();
-  });
-
-  test('a listener that stops after one intent leaves the rest for the next', () async {
-    await AppActor.instance.configure('pk_test_123');
-    for (final id in ['intent_1', 'intent_2']) {
-      await emitNativeEvent('purchase_intent_received', {
-        'intent_id': id,
-        'product_id': 'pro_monthly',
-      });
-    }
-
-    final first = await AppActor.instance.onPurchaseIntent.first;
-    final second = await AppActor.instance.onPurchaseIntent.first;
-
-    expect([first.intentId, second.intentId], ['intent_1', 'intent_2']);
-  });
-
-  test('at most 10 purchase intents are held, the oldest go first', () async {
-    await AppActor.instance.configure('pk_test_123');
-    for (var i = 1; i <= 11; i++) {
-      await emitNativeEvent('purchase_intent_received', {
-        'intent_id': 'intent_$i',
-        'product_id': 'pro_monthly',
-      });
-    }
-
-    final intents = <String>[];
-    final subscription = AppActor.instance.onPurchaseIntent.listen(
-      (intent) => intents.add(intent.intentId),
-    );
-    await pumpEventQueue();
-    await subscription.cancel();
-
-    expect(intents, [for (var i = 2; i <= 11; i++) 'intent_$i']);
-  });
-
-  test('a purchase intent the native side has forgotten is not delivered', () async {
-    var now = DateTime(2026, 9, 28, 12);
-    AppActorPlatform.now = () => now;
-    await AppActor.instance.configure('pk_test_123');
-    await emitNativeEvent('purchase_intent_received', {
-      'intent_id': 'stale',
-      'product_id': 'pro_monthly',
-    });
-    now = now.add(const Duration(minutes: 6));
-    await emitNativeEvent('purchase_intent_received', {
-      'intent_id': 'fresh',
-      'product_id': 'pro_monthly',
+      expect([first.intentId, second.intentId], ['intent_1', 'intent_2']);
     });
 
-    final intent = await AppActor.instance.onPurchaseIntent.first;
+    test('at most 10 are held, the oldest go first', () async {
+      for (var i = 1; i <= 11; i++) {
+        await emitIntent('intent_$i');
+      }
 
-    expect(intent.intentId, 'fresh');
-  });
-
-  test('reset drops purchase intents no one received', () async {
-    await AppActor.instance.configure('pk_test_123');
-    await emitNativeEvent('purchase_intent_received', {
-      'intent_id': 'intent_before_reset',
-      'product_id': 'pro_monthly',
+      expect(await drainIntentIds(), [for (var i = 2; i <= 11; i++) 'intent_$i']);
     });
-    await AppActor.instance.reset();
 
-    final intents = <AppActorPurchaseIntent>[];
-    final subscription = AppActor.instance.onPurchaseIntent.listen(intents.add);
-    await pumpEventQueue();
-    expect(intents, isEmpty);
-    await subscription.cancel();
+    test('one the native side has forgotten is not delivered', () async {
+      var now = DateTime(2026, 9, 28, 12);
+      AppActorPlatform.now = () => now;
+      await emitIntent('stale');
+      now = now.add(const Duration(minutes: 6));
+      await emitIntent('fresh');
+
+      expect(await drainIntentIds(), ['fresh']);
+    });
+
+    test('reset drops the ones no one received', () async {
+      await emitIntent('intent_before_reset');
+      await AppActor.instance.reset();
+
+      expect(await drainIntentIds(), isEmpty);
+    });
   });
 
   test('configure selects the iOS key from AppActorPlatformKeys', () async {
