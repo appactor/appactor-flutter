@@ -11,8 +11,8 @@ void main() {
   final recordedCalls = <MethodCall>[];
 
   Future<dynamic> handleCall(MethodCall call) async {
-    recordedCalls.add(call);
     if (call.method != 'execute') return null;
+    recordedCalls.add(call);
 
     final args = Map<String, dynamic>.from(call.arguments as Map);
     final method = args['method'] as String;

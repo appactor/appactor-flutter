@@ -54,6 +54,14 @@ Native-to-Dart events flow through `MethodChannel` handler to broadcast `StreamC
 
 Malformed events are silently dropped to prevent isolate crashes.
 
+An app can run several Flutter engines (firebase_messaging's background handler on Android, flutter_local_notifications' background actions on iOS), but the native SDK has one event listener per process. So:
+
+- Both native bridges keep a list of attached engines and send each event to every engine that has sent `listen`, which `AppActorPlatform.ensureInitialized()` does when it registers the handler. Do not go back to one static channel: a second engine would take the events away from the app's own.
+- An engine that never touches AppActor gets no events: they would only pile up in its channel buffer, and on iOS a message to an engine that isn't running yet asserts.
+- The native listener starts with the first engine and stops when the last one detaches. On iOS the plugin instance is published to the registrar, because the engine calls `detachFromEngine(for:)` only on published objects, from its dealloc and so possibly off the main thread. After the last detach the native bridge has dropped its `onPurchaseIntent` callback, and the native SDK buys a promoted purchase itself.
+
+`purchase_intent_received` events wait in `AppActorPlatform._pendingPurchaseIntents` until a listener is there, capped and expired like the native `PurchaseIntentStore`; `reset()` clears them. The controller is sync, so a listener that cancels from its callback (`.first`, `take`) leaves the rest for the next one. One that pauses (`await for` with `break`) loses the ones queued behind the first.
+
 ### configure() and Hot Restart
 
 `configure()` is idempotent: it checks `isConfigured()` before proceeding and calls `AppActorPlatform.ensureInitialized()` to re-register the method call handler. This is critical for Flutter hot restart, where the Dart VM restarts but native state persists — the event listener must be re-registered. `reset()` clears both native state and the Dart-side `_searchAdsTrackingEnabled` flag.
@@ -65,7 +73,7 @@ All models are `@immutable` with manual `fromJson()` factory constructors (no co
 ### Native Implementations
 
 - **iOS** (`ios/Classes/AppActorFlutterPlugin.swift`): Swift 5.9+, min iOS 16, delegates to `AppActorPlugin`, uses `AppActorPluginDelegate` protocol for events. Dependency declared via CocoaPods (`AppActorPlugin`, `0.2.1`), resolved from the iOS SDK git repo.
-- **Android** (`android/src/main/kotlin/.../AppActorFlutterPlugin.kt`): Kotlin 2.2.20, minSdk 26, compileSdk 36, JVM target Java 11. Implements `FlutterPlugin` + `ActivityAware`. Dependency: `com.appactor:appactor-plugin:2.4.2`, hosted on Maven Central — no additional authentication required.
+- **Android** (`android/src/main/kotlin/.../AppActorFlutterPlugin.kt`): Kotlin 2.2.20, minSdk 26, compileSdk 36, JVM target Java 11. Implements `FlutterPlugin` + `ActivityAware`. Dependency: `com.appactor:appactor-plugin:2.4.3`, hosted on Maven Central — no additional authentication required.
 
 ### Public API Export
 
@@ -90,6 +98,7 @@ All models are `@immutable` with manual `fromJson()` factory constructors (no co
 
 ## Test Strategy
 
-- **Dart unit tests** (`test/`): Focus on model deserialization, error classification, and deep equality. No platform mocking — pure model validation.
-- **Android native tests** (`android/src/test/`): Use Mockito to mock `MethodChannel.Result`. Test method routing and error handling. Cannot fully test AppActorPlugin delegation since plugin isn't attached to an engine.
+- **Dart unit tests** (`test/`): Model deserialization, error classification and deep equality are pure. The lifecycle, purchase and attribute tests mock the `appactor_flutter` channel and push native events through it, which covers the held purchase intents.
+- **Android native tests** (`android/src/test/`): Mockito. Method routing and error handling, plus the multi-engine bridge: mocked `FlutterPluginBinding`s attach several engines and the tests check what reaches each messenger through `deliver`. The `PluginEventListener` to main-handler hop needs a Looper and isn't covered.
+- **iOS**: `example/ios/RunnerTests` only calls `handle`. The engine list and `EventRelay` are compile-checked, not tested; there is no simulator run.
 - **Integration tests** (`example/integration_test/`): Sanity checks on real device/simulator (instance availability, configured state, SDK version).

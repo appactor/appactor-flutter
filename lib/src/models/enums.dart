@@ -54,11 +54,13 @@ enum AppActorPackageType {
 
 enum AppActorProductType {
   subscription,
+  nonRenewingSubscription,
   nonConsumable,
   consumable,
   unknown;
 
   String get wireValue => switch (this) {
+        nonRenewingSubscription => 'non_renewing_subscription',
         nonConsumable => 'non_consumable',
         _ => name,
       };

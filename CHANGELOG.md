@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.1
+
+- Updated the Android native dependency to `com.appactor:appactor-plugin:2.4.3`. It verifies signed responses with Tink instead of BouncyCastle, which fixes two Android build failures:
+  - apps on AGP 8.11.x or older (Flutter 3.35–3.41 templates) failed with "2 files found with path 'META-INF/versions/9/OSGI-INF/MANIFEST.MF'";
+  - apps with `android.enableJetifier=true` on AGP 8.9.1–8.12.x failed with "Unsupported class file major version 69".
+
+  Apps that added a `packaging { resources { excludes += ... } }` workaround for the first one can remove it.
+- Fixed: on Android, `originalPurchaseDate` was always null and `latestPurchaseDate` repeated `purchaseDate`. They now match iOS: `originalPurchaseDate` is the purchase date and `latestPurchaseDate` the last renewal.
+- Fixed: AppActor events went silent in the app when a second Flutter engine started in the same process. On Android that happens as soon as `FirebaseMessaging.onBackgroundMessage` is registered; on iOS when flutter_local_notifications runs a background notification action. The second engine took over the events, so `onCustomerInfoUpdated`, `onDeferredPurchaseResolved` and `onReceiptPipelineEvent` stopped emitting. Every engine that uses AppActor now receives them. An engine that never calls AppActor, such as the FCM background isolate, gets none.
+- Fixed: on iOS, a promoted purchase or win-back offer intent was lost if nothing listened to `onPurchaseIntent` when it arrived, for example when the app launched from the App Store and subscribes only on its paywall. Intents now wait for a listener (up to 10, each for the 5 minutes the native side keeps it), and `reset()` drops them.
+- Changed: on iOS, the plugin now detaches when its Flutter engine is destroyed (add-to-app); before, the engine never told it. When the last engine goes, the native SDK buys a promoted purchase itself instead of the intent being lost.
+- Changed, breaking for exhaustive switches: added `AppActorProductType.nonRenewingSubscription`. App Store non-renewing subscriptions used to come through as `unknown`. A `switch` over `AppActorProductType` that lists every case, without a default, stops compiling until it handles the new case. The value sits between `subscription` and `nonConsumable`, so the `index` of the ones after it moves up by one.
+
 ## 0.1.0
 
 - Changed, breaking: the minimum is iOS 16 and Android minSdk 26 (Android 8.0), as the native SDKs now require. An app with a lower floor fails to build with this version until it raises its own.

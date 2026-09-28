@@ -16,6 +16,10 @@ extension AppActorStreams on AppActor {
 
   /// Stream of promoted IAP / win-back offer intents from the App Store.
   /// iOS only (iOS 16.4+). Never emits on Android.
+  ///
+  /// Intents that arrive while nothing listens (up to 10) are delivered to the
+  /// next listener, so a paywall that subscribes late still gets the one the app
+  /// was launched with. `purchaseFromIntent` accepts an intent for 5 minutes.
   Stream<AppActorPurchaseIntent> get onPurchaseIntent =>
       AppActorPlatform.purchaseIntentEvents
           .map((json) => AppActorPurchaseIntent.fromJson(json));

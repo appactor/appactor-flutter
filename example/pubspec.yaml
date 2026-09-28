@@ -2,7 +2,7 @@ name: appactor_flutter_example
 description: "Demonstrates how to use the appactor_flutter plugin."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-version: 0.1.0
+version: 0.1.1
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
