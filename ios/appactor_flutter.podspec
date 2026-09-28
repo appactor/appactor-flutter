@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'appactor_flutter'
-  s.version          = '0.1.0'
+  s.version          = '0.1.1'
   s.summary          = 'AppActor Flutter SDK — server-authoritative in-app purchase management.'
   s.description      = <<-DESC
 AppActor Flutter plugin wrapping the native AppActorPlugin SDK for iOS.

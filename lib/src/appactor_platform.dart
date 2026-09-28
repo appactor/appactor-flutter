@@ -13,7 +13,9 @@ class AppActorPlatform {
   static final _receiptEventController =
       StreamController<Map<String, dynamic>>.broadcast();
   static final _purchaseIntentController =
-      StreamController<Map<String, dynamic>>.broadcast();
+      StreamController<Map<String, dynamic>>.broadcast(
+    onListen: _flushPendingPurchaseIntents,
+  );
   static final _deferredPurchaseController =
       StreamController<Map<String, dynamic>>.broadcast();
 
@@ -26,6 +28,13 @@ class AppActorPlatform {
   static Stream<Map<String, dynamic>> get deferredPurchaseEvents =>
       _deferredPurchaseController.stream;
 
+  // The App Store hands an intent over once, and a broadcast stream drops events
+  // no one listens to: an app that subscribes only on its paywall would lose the
+  // intent a promoted purchase launched it with. They wait for the first listener.
+  // Capped like the native store, which also forgets them after 5 minutes.
+  static final _pendingPurchaseIntents = <Map<String, dynamic>>[];
+  static const _maxPendingPurchaseIntents = 10;
+
   static bool _initialized = false;
 
   static void ensureInitialized() {
@@ -36,6 +45,13 @@ class AppActorPlatform {
 
   static void resetState() {
     _initialized = false;
+    _pendingPurchaseIntents.clear();
+  }
+
+  static void _flushPendingPurchaseIntents() {
+    final pending = List.of(_pendingPurchaseIntents);
+    _pendingPurchaseIntents.clear();
+    pending.forEach(_purchaseIntentController.add);
   }
 
   static Future<dynamic> _handleNativeEvent(MethodCall call) async {
@@ -60,7 +76,14 @@ class AppActorPlatform {
         case 'receipt_pipeline_event':
           _receiptEventController.add(data);
         case 'purchase_intent_received':
-          _purchaseIntentController.add(data);
+          if (_purchaseIntentController.hasListener) {
+            _purchaseIntentController.add(data);
+          } else {
+            if (_pendingPurchaseIntents.length == _maxPendingPurchaseIntents) {
+              _pendingPurchaseIntents.removeAt(0);
+            }
+            _pendingPurchaseIntents.add(data);
+          }
         case 'deferred_purchase_resolved':
           _deferredPurchaseController.add(data);
       }

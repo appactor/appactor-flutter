@@ -1,5 +1,9 @@
 package com.appactor.appactor_flutter
 
+import android.content.Context
+import com.appactor.plugin.AppActorPlugin
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.Dispatchers
@@ -11,6 +15,8 @@ import org.mockito.Mockito
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class AppActorFlutterPluginTest {
@@ -24,6 +30,29 @@ internal class AppActorFlutterPluginTest {
     @AfterTest
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun secondEngine_detaching_keepsEventsForTheFirst() {
+        val app = AppActorFlutterPlugin()
+        val background = AppActorFlutterPlugin()
+        val appBinding = pluginBinding()
+        val backgroundBinding = pluginBinding()
+
+        app.onAttachedToEngine(appBinding)
+        background.onAttachedToEngine(backgroundBinding)
+        background.onDetachedFromEngine(backgroundBinding)
+        assertNotNull(AppActorPlugin.eventListener)
+
+        app.onDetachedFromEngine(appBinding)
+        assertNull(AppActorPlugin.eventListener)
+    }
+
+    private fun pluginBinding(): FlutterPlugin.FlutterPluginBinding {
+        val binding = Mockito.mock(FlutterPlugin.FlutterPluginBinding::class.java)
+        Mockito.`when`(binding.binaryMessenger).thenReturn(Mockito.mock(BinaryMessenger::class.java))
+        Mockito.`when`(binding.applicationContext).thenReturn(Mockito.mock(Context::class.java))
+        return binding
     }
 
     @Test

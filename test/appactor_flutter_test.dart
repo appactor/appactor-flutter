@@ -636,6 +636,10 @@ void main() {
         AppActorProductType.subscription,
       );
       expect(
+        AppActorProductType.fromString('non_renewing_subscription'),
+        AppActorProductType.nonRenewingSubscription,
+      );
+      expect(
         AppActorProductType.fromString('non_consumable'),
         AppActorProductType.nonConsumable,
       );

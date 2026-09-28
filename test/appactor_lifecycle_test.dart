@@ -195,6 +195,50 @@ void main() {
     },
   );
 
+  test('a purchase intent with no listener waits for the first one', () async {
+    await AppActor.instance.configure('pk_test_123');
+    await emitNativeEvent('purchase_intent_received', {
+      'intent_id': 'intent_1',
+      'product_id': 'pro_monthly',
+    });
+
+    final intents = <AppActorPurchaseIntent>[];
+    final subscription = AppActor.instance.onPurchaseIntent.listen(intents.add);
+    await pumpEventQueue();
+    expect(intents.map((intent) => intent.intentId), ['intent_1']);
+
+    await emitNativeEvent('purchase_intent_received', {
+      'intent_id': 'intent_2',
+      'product_id': 'pro_monthly',
+    });
+    await pumpEventQueue();
+    expect(intents.map((intent) => intent.intentId), ['intent_1', 'intent_2']);
+    await subscription.cancel();
+
+    final late = <AppActorPurchaseIntent>[];
+    final lateSubscription = AppActor.instance.onPurchaseIntent.listen(
+      late.add,
+    );
+    await pumpEventQueue();
+    expect(late, isEmpty);
+    await lateSubscription.cancel();
+  });
+
+  test('reset drops purchase intents no one received', () async {
+    await AppActor.instance.configure('pk_test_123');
+    await emitNativeEvent('purchase_intent_received', {
+      'intent_id': 'intent_before_reset',
+      'product_id': 'pro_monthly',
+    });
+    await AppActor.instance.reset();
+
+    final intents = <AppActorPurchaseIntent>[];
+    final subscription = AppActor.instance.onPurchaseIntent.listen(intents.add);
+    await pumpEventQueue();
+    expect(intents, isEmpty);
+    await subscription.cancel();
+  });
+
   test('configure selects the iOS key from AppActorPlatformKeys', () async {
     await AppActor.instance.configure(
       const AppActorPlatformKeys(ios: 'pk_ios_123', android: 'pk_android_123'),
