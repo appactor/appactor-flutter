@@ -1,44 +1,44 @@
 PODS:
-  - AppActor (0.2.1)
-  - appactor_flutter (0.1.1):
-    - AppActorPlugin (= 0.2.1)
+  - AppActor (0.2.2)
+  - appactor_flutter (0.1.2):
+    - AppActorPlugin (= 0.2.2)
     - Flutter
-  - AppActorPlugin (0.2.1):
-    - AppActor (= 0.2.1)
+  - AppActorPlugin (0.2.2):
+    - AppActor (= 0.2.2)
   - Flutter (1.0.0)
 
 DEPENDENCIES:
-  - AppActor (from `https://github.com/appactor/appactor-ios.git`, tag `0.2.1`)
+  - AppActor (from `https://github.com/appactor/appactor-ios.git`, tag `0.2.2`)
   - appactor_flutter (from `.symlinks/plugins/appactor_flutter/ios`)
-  - AppActorPlugin (from `https://github.com/appactor/appactor-ios.git`, tag `0.2.1`)
+  - AppActorPlugin (from `https://github.com/appactor/appactor-ios.git`, tag `0.2.2`)
   - Flutter (from `Flutter`)
 
 EXTERNAL SOURCES:
   AppActor:
     :git: https://github.com/appactor/appactor-ios.git
-    :tag: 0.2.1
+    :tag: 0.2.2
   appactor_flutter:
     :path: ".symlinks/plugins/appactor_flutter/ios"
   AppActorPlugin:
     :git: https://github.com/appactor/appactor-ios.git
-    :tag: 0.2.1
+    :tag: 0.2.2
   Flutter:
     :path: Flutter
 
 CHECKOUT OPTIONS:
   AppActor:
     :git: https://github.com/appactor/appactor-ios.git
-    :tag: 0.2.1
+    :tag: 0.2.2
   AppActorPlugin:
     :git: https://github.com/appactor/appactor-ios.git
-    :tag: 0.2.1
+    :tag: 0.2.2
 
 SPEC CHECKSUMS:
-  AppActor: af752ec735284f102e9b41a9150d92df9220659f
-  appactor_flutter: acd85d303bd3bab98c3ae0cfd9d442460e198331
-  AppActorPlugin: 2f1a92fa96190049e810ccc821d632a737246b36
-  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  AppActor: 2d693ae11aa3ee857f6ce4adcc2daf713e615159
+  appactor_flutter: 7b600b79b00e6a96de4609c17aa739233bddac5c
+  AppActorPlugin: de5c7284fd7caaaf11ac3b7b78f3912940b82ddb
+  Flutter: 71a624a5bc0c04062bf19101d501e466baf2fb47
 
-PODFILE CHECKSUM: 9df251d8935b9c2771e6c79fb8e3a5535aee2d05
+PODFILE CHECKSUM: 69b42fb26e11d621f4883803a2f37b09952d7d4e
 
 COCOAPODS: 1.16.2
