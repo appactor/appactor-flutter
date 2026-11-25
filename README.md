@@ -21,7 +21,7 @@ AppActor handles in-app purchases, subscriptions, and entitlements so you can fo
 
 ```yaml
 dependencies:
-  appactor_flutter: ^0.1.1
+  appactor_flutter: ^0.1.2
 ```
 
 ## Quick Start
@@ -63,6 +63,7 @@ offerings.current;                          // the current offering
 offerings.allOfferings;                     // List<AppActorOffering>, current first
 offerings['onboarding'];                    // by offeringKey
 final onboarding = await AppActor.instance.getOffering('onboarding'); // fetch + lookup in one call
+final monthly = onboarding?.packageForLookupKey('pro_monthly');       // strict package lookup by lookupKey
 
 // Experiments — never null, so no null-checks
 final paywall = await AppActor.instance.getExperiment('paywall_test');

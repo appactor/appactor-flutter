@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Added: `AppActorPackage.lookupKey` (parsed from the native `lookup_key` field, trimmed, `null` when absent/blank) and `AppActorOffering.packageForLookupKey(lookupKey)` for strict case-sensitive package lookup with no fallback to `id`, `packageType`, `productId`, or another package.
+- Fixed: `getCachedOfferings()` now preserves cached offerings when the native payload contains `all` without a `current` key (for example when iOS omits a nil `current` offering).
+- Updated native SDK dependencies to iOS `AppActorPlugin 0.2.2` and Android `com.appactor:appactor-plugin:2.4.4`, which carry package `lookupKey` end-to-end from the API through the offerings cache (bumping the cache schema so upgraded apps discard legacy keyless offerings caches cleanly) and plugin serialization.
+
 ## 0.1.1
 
 - Updated the Android native dependency to `com.appactor:appactor-plugin:2.4.3`. It verifies signed responses with Tink instead of BouncyCastle, which fixes two Android build failures:
