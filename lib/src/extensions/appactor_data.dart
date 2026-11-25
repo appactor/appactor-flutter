@@ -58,7 +58,11 @@ extension AppActorData on AppActor {
     final result = await AppActorPlatform.execute(
       MethodNames.getCachedOfferings,
     );
-    if (result['value'] == null && !result.containsKey('current')) return null;
+    if (result['value'] == null &&
+        !result.containsKey('current') &&
+        !result.containsKey('all')) {
+      return null;
+    }
     return AppActorOfferings.fromJson(result);
   }
 

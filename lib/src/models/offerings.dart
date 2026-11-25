@@ -4,6 +4,12 @@ import '../internal/deep_equals.dart';
 import 'enums.dart';
 import 'verification_result.dart';
 
+String? _normalizePackageLookupKey(Object? raw) {
+  if (raw is! String) return null;
+  final trimmed = raw.trim();
+  return trimmed.isEmpty ? null : trimmed;
+}
+
 @immutable
 class AppActorOfferings {
   final AppActorOffering? current;
@@ -127,6 +133,20 @@ class AppActorOffering {
     return null;
   }
 
+  /// Returns the package whose [AppActorPackage.lookupKey] matches [lookupKey]
+  /// exactly, or `null` if [lookupKey] is empty, blank, whitespace-padded, or
+  /// does not match any package in this offering.
+  ///
+  /// Never falls back to [AppActorPackage.id], [AppActorPackage.packageType],
+  /// [AppActorPackage.productId], or another package.
+  AppActorPackage? packageForLookupKey(String lookupKey) {
+    if (lookupKey.isEmpty || lookupKey != lookupKey.trim()) return null;
+    for (final p in packages) {
+      if (p.lookupKey == lookupKey) return p;
+    }
+    return null;
+  }
+
   AppActorPackage? packageFor(AppActorPackageType type) {
     for (final p in packages) {
       if (p.packageType == type) return p;
@@ -184,6 +204,11 @@ class AppActorOffering {
 @immutable
 class AppActorPackage {
   final String id;
+
+  /// Developer-defined stable key for this package (e.g. `'pro_monthly'`),
+  /// or `null` when none is assigned. Never falls back to [id], [packageType],
+  /// or [productId].
+  final String? lookupKey;
   final AppActorPackageType packageType;
   final String productId;
   final String? storeProductId;
@@ -206,6 +231,7 @@ class AppActorPackage {
 
   const AppActorPackage({
     required this.id,
+    this.lookupKey,
     this.packageType = AppActorPackageType.custom,
     required this.productId,
     this.storeProductId,
@@ -230,6 +256,7 @@ class AppActorPackage {
   factory AppActorPackage.fromJson(Map<String, dynamic> json) {
     return AppActorPackage(
       id: json['id'] as String? ?? '',
+      lookupKey: _normalizePackageLookupKey(json['lookup_key']),
       packageType: AppActorPackageType.fromString(
         json['package_type'] as String? ?? 'custom',
       ),
@@ -260,7 +287,7 @@ class AppActorPackage {
 
   @override
   String toString() =>
-      'AppActorPackage(id: $id, productId: $productId, '
+      'AppActorPackage(id: $id, lookupKey: $lookupKey, productId: $productId, '
       '${localizedPriceString ?? price}, store: $store)';
 
   @override
@@ -269,6 +296,7 @@ class AppActorPackage {
       other is AppActorPackage &&
           runtimeType == other.runtimeType &&
           id == other.id &&
+          lookupKey == other.lookupKey &&
           packageType == other.packageType &&
           productId == other.productId &&
           storeProductId == other.storeProductId &&
@@ -292,6 +320,7 @@ class AppActorPackage {
   @override
   int get hashCode => Object.hashAll([
     id,
+    lookupKey,
     packageType,
     productId,
     storeProductId,
